@@ -56,7 +56,7 @@ class Team extends Component {
             <>
                 <div className={index.div}>
                     <Title level={2}>教师</Title>
-                    <Divider style={{border: "solid", marginTop: '-8px'}}/>
+                    <Divider style={{border: "1px solid #595959", marginTop: '-8px'}}/>
                     {teachers.map((d, i) => {
                         return (
                             <Card hoverable={true} key={i} className={index.card}>
@@ -88,7 +88,7 @@ class Team extends Component {
                 </div>
                 <div className={index.div}>
                     <Title level={2}>学生</Title>
-                    <Divider style={{border: "solid", marginTop: '-8px'}}/>
+                    <Divider style={{border: "1px solid #595959", marginTop: '-8px'}}/>
                     {students.map((d, i) => {
                         return (
                             <Card hoverable={true} key={i} className={index.card}>
