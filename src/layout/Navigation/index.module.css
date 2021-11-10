@@ -1,0 +1,33 @@
+.ant-row-rtl #components-layout-demo-top-side {
+    float: right;
+    margin: 16px 0 16px 24px;
+}
+
+.site-layout-background {
+    background: #fff;
+}
+
+.logoImg {
+    float: left;
+    height: 100%;
+}
+
+.menu {
+    float: left;
+    margin-left: 50px;
+    width: 500px;
+}
+
+.layout {
+    min-height: 100%;
+}
+
+.footer {
+    text-align: center;
+    background-color: #000020;
+    margin-top: 50px;
+}
+
+.paragraph {
+    color: white;
+}

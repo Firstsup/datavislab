@@ -1,0 +1,32 @@
+.card {
+    padding: 20px 50px;
+    margin: 30px auto;
+    width: 1100px;
+    min-height: 685px;
+}
+
+.title {
+    text-align: center;
+}
+
+.date {
+    text-align: center;
+    color: #8c8c8c;
+}
+
+.content {
+    text-indent: 2em;
+    font-size: 16px;
+    margin: 0;
+    line-height: 30px;
+}
+
+.linkDiv {
+    margin: 14px 0;
+    display: block;
+}
+
+.backButton {
+    margin-right: 50px;
+    float: right;
+}

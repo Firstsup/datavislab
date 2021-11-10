@@ -1,0 +1,46 @@
+.carouselImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.carousel {
+    margin: 30px auto;
+    width: 1100px;
+    height: 350px;
+}
+
+.imgDiv {
+    width: 1100px;
+    height: 350px;
+}
+
+.title {
+    margin-top: 70px;
+    text-align: center;
+}
+
+.paragraph {
+    margin: 30px auto auto;
+    width: 1100px;
+    line-height: 25px;
+    font-size: 16px;
+}
+
+.card {
+    display: inline;
+    float: left;
+    width: 315px;
+    height: 220px;
+    margin: 10px 25px;
+}
+
+.cardImg {
+    width: 315px;
+    height: 150px;
+}
+
+.cardDiv {
+    width: 1100px;
+    margin: 30px auto auto;
+}
