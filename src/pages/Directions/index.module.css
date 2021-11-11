@@ -1,0 +1,25 @@
+.div {
+    margin: 30px auto;
+    width: 1100px;
+}
+
+.card {
+    margin: 20px 0;
+    width: 100%;
+    cursor: default;
+}
+
+.cardImg {
+    display: inline-block;
+    width: 220px;
+    height: 140px;
+    object-fit: cover;
+    float: left;
+    margin-left: 20px;
+    margin-right: 50px;
+}
+
+.paragraph {
+    text-indent: 2em;
+    margin-left: 290px;
+}

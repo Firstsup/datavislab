@@ -62,7 +62,7 @@ class News extends Component {
                     return (
                         <Card hoverable={true} key={i} className={index.card} onClick={this.clickCard(d.id)}>
                             <img className={index.cardImg} src={d.img} alt={d.name}/>
-                            <Paragraph style={{marginTop: '27px'}}>{d.date}</Paragraph>
+                            <Paragraph style={{marginTop: '16px'}}>{d.date}</Paragraph>
                             <Title level={5}>{d.title}</Title>
                         </Card>
                     )

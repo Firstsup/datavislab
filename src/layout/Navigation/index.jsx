@@ -11,7 +11,7 @@ const labInformation = {
     ChineseName: '大数据可视分析实验室',
     EnglishName: 'Visual Analytic of Big Data Lab',
     phone: '123123123',
-    mail: '123123123@qq.com',
+    email: '123123123@qq.com',
     address: '创新中心B312'
 }
 
@@ -30,8 +30,10 @@ class Navigation extends Component {
                           selectedKeys={[this.props.history.location.pathname.startsWith('/newsdetail') ? '/news' : this.props.history.location.pathname]}>
                         <Menu.Item key="/index"><Link to={'/index'}>首页</Link></Menu.Item>
                         <Menu.Item key="/news"><Link to={'/news'}>新闻资讯</Link></Menu.Item>
+                        <Menu.Item key="/directions"><Link to={'/directions'}>研究方向</Link></Menu.Item>
                         <Menu.Item key="/achievements"><Link to={'/achievements'}>团队成果</Link></Menu.Item>
                         <Menu.Item key="/team"><Link to={'/team'}>团队成员</Link></Menu.Item>
+                        <Menu.Item key="/about"><Link to={'/about'}>关于我们</Link></Menu.Item>
                     </Menu>
                 </Header>
                 <Content style={{padding: '0 74px', margin: '16px 0'}}>
@@ -42,7 +44,7 @@ class Navigation extends Component {
                         大数据可视分析实验室&emsp;Visual Analytic of Big Data Lab
                     </Paragraph>
                     <Paragraph className={index.paragraph}>
-                        联系电话：{labInformation.phone}&emsp;联系邮箱：{labInformation.mail}
+                        联系电话：{labInformation.phone}&emsp;联系邮箱：{labInformation.email}
                     </Paragraph>
                     <Paragraph className={index.paragraph}>
                         地址：{labInformation.address}
