@@ -1,8 +1,8 @@
 import React, {Component} from 'react';
+import index from "../OuterNavigation/index.module.css";
+import {Layout, Menu, Typography} from "antd";
 import {Link, withRouter} from "react-router-dom";
-import {Layout, Menu, Typography} from 'antd';
-import index from './index.module.css'
-import NavigationRoute from "../../routes/Navigation";
+import InnerNavigationRoute from "../../routes/InnerNavigation";
 
 const {Header, Content, Footer} = Layout;
 const {Paragraph} = Typography;
@@ -15,11 +15,7 @@ const labInformation = {
     address: '创新中心B312'
 }
 
-class Navigation extends Component {
-    clickLogo = () => {
-        this.props.history.push('/index')
-    }
-
+class InnerNavigation extends Component {
     render() {
         return (
             <Layout className={index.layout}>
@@ -27,17 +23,12 @@ class Navigation extends Component {
                     <img className={index.logoImg} src={'/logo.png'} alt={'logo'} style={{cursor: 'pointer'}}
                          onClick={this.clickLogo}/>
                     <Menu className={index.menu} theme="dark" mode="horizontal"
-                          selectedKeys={[this.props.history.location.pathname.startsWith('/newsdetail') ? '/news' : this.props.history.location.pathname]}>
-                        <Menu.Item key="/index"><Link to={'/index'}>首页</Link></Menu.Item>
-                        <Menu.Item key="/news"><Link to={'/news'}>新闻资讯</Link></Menu.Item>
-                        <Menu.Item key="/directions"><Link to={'/directions'}>研究方向</Link></Menu.Item>
-                        <Menu.Item key="/achievements"><Link to={'/achievements'}>团队成果</Link></Menu.Item>
-                        <Menu.Item key="/team"><Link to={'/team'}>团队成员</Link></Menu.Item>
-                        <Menu.Item key="/about"><Link to={'/about'}>关于我们</Link></Menu.Item>
+                          selectedKeys={[this.props.history.location.pathname]}>
+                        <Menu.Item key="/discussion"><Link to={'/discussion'}>首页</Link></Menu.Item>
                     </Menu>
                 </Header>
                 <Content style={{padding: '0 74px', margin: '16px 0'}}>
-                    <NavigationRoute/>
+                    <InnerNavigationRoute/>
                 </Content>
                 <Footer className={index.footer}>
                     <Paragraph className={index.paragraph} style={{fontWeight: 'bold'}}>
@@ -55,4 +46,4 @@ class Navigation extends Component {
     }
 }
 
-export default withRouter(Navigation)
+export default withRouter(InnerNavigation)

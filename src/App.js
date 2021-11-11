@@ -1,16 +1,20 @@
 import React, {Component} from 'react';
-import {BrowserRouter} from "react-router-dom";
+import {BrowserRouter, Switch} from "react-router-dom";
 import './App.css'
 import {ConfigProvider} from "antd";
 import cn from 'antd/es/locale/zh_CN'
-import Navigation from "./layout/Navigation";
+import OuterNavigation from "./layout/OuterNavigation";
+import InnerNavigation from "./layout/InnerNavigation";
 
 export default class App extends Component {
     render() {
         return (
             <ConfigProvider locale={cn}>
                 <BrowserRouter>
-                    <Navigation/>
+                    <Switch>
+                        {(window.location.pathname === '/discussion' || window.location.pathname === '/recommend') ?
+                            <InnerNavigation/> : <OuterNavigation/>}
+                    </Switch>
                 </BrowserRouter>
             </ConfigProvider>
         )
