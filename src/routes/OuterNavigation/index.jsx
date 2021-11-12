@@ -1,12 +1,12 @@
 import React, {Component} from 'react';
 import {Redirect, Route, Switch} from "react-router-dom";
-import Index from "../../pages/Index";
-import News from "../../pages/News";
-import Team from "../../pages/Team";
-import NewsDetail from "../../pages/NewsDetail";
-import Achievements from "../../pages/Achievements";
-import Directions from "../../pages/Directions";
-import About from "../../pages/About";
+import Index from "../../pages/Outer/Index";
+import News from "../../pages/Outer/News";
+import Team from "../../pages/Outer/Team";
+import NewsDetail from "../../pages/Outer/NewsDetail";
+import Achievements from "../../pages/Outer/Achievements";
+import Directions from "../../pages/Outer/Directions";
+import About from "../../pages/Outer/About";
 
 class OuterNavigationRoute extends Component {
     render() {

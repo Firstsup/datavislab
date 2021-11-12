@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {Route, Switch} from "react-router-dom";
-import Discussion from "../../pages/Discussion";
+import Discussion from "../../pages/Inner/Discussion";
 
 class InnerNavigationRoute extends Component {
     render() {

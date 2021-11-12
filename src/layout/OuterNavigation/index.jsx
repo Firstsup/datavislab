@@ -21,7 +21,9 @@ class OuterNavigation extends Component {
     }
 
     clickInner = () => {
+        console.log(123)
         this.props.history.push('/discussion')
+        this.props.history.go()
     }
 
     render() {
@@ -38,7 +40,7 @@ class OuterNavigation extends Component {
                         <Menu.Item key="/achievements"><Link to={'/achievements'}>团队成果</Link></Menu.Item>
                         <Menu.Item key="/team"><Link to={'/team'}>团队成员</Link></Menu.Item>
                         <Menu.Item key="/about"><Link to={'/about'}>关于我们</Link></Menu.Item>
-                        <Menu.Item key="/discussion" onClick={this.clickInner}>内部讨论</Menu.Item>
+                        <Menu.Item onClick={this.clickInner}>内部讨论</Menu.Item>
                     </Menu>
                 </Header>
                 <Content style={{padding: '0 74px', margin: '16px 0'}}>
