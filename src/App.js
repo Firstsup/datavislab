@@ -5,6 +5,7 @@ import {ConfigProvider} from "antd";
 import cn from 'antd/es/locale/zh_CN'
 import OuterNavigation from "./layout/OuterNavigation";
 import InnerNavigation from "./layout/InnerNavigation";
+import BackgroundNavigation from "./layout/BackgroundNavigation";
 
 export default class App extends Component {
     render() {
@@ -12,8 +13,9 @@ export default class App extends Component {
             <ConfigProvider locale={cn}>
                 <BrowserRouter>
                     <Switch>
-                        {(window.location.pathname === '/discussion' || window.location.pathname === '/recommend') ?
-                            <InnerNavigation/> : <OuterNavigation/>}
+                        {window.location.pathname === '/background' ?
+                            <BackgroundNavigation/> : (window.location.pathname === '/personal' || window.location.pathname === '/discussion' || window.location.pathname === '/recommend') ?
+                                <InnerNavigation/> : <OuterNavigation/>}
                     </Switch>
                 </BrowserRouter>
             </ConfigProvider>

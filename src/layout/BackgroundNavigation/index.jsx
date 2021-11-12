@@ -1,8 +1,9 @@
 import React, {Component} from 'react';
-import index from "./index.module.css";
+import index from './index.module.css'
 import {Layout, Menu, Typography} from "antd";
-import {Link, withRouter} from "react-router-dom";
-import InnerNavigationRoute from "../../routes/InnerNavigation";
+import {Link} from "react-router-dom";
+import OuterNavigationRoute from "../../routes/OuterNavigation";
+import BackgroundNavigationRoute from "../../routes/BackgroundNavigation";
 
 const {Header, Content, Footer} = Layout;
 const {Paragraph} = Typography;
@@ -15,7 +16,7 @@ const labInformation = {
     address: '创新中心B312'
 }
 
-class InnerNavigation extends Component {
+class BackgroundNavigation extends Component {
     render() {
         return (
             <Layout className={index.layout}>
@@ -23,14 +24,12 @@ class InnerNavigation extends Component {
                     <img className={index.logoImg} src={'/logo.png'} alt={'logo'} style={{cursor: 'pointer'}}
                          onClick={this.clickLogo}/>
                     <Menu className={index.menu} theme="dark" mode="horizontal"
-                          selectedKeys={[this.props.history.location.pathname]}>
-                        <Menu.Item key="/personal"><Link to={'/personal'}>个人主页</Link></Menu.Item>
-                        <Menu.Item key="/discussion"><Link to={'/discussion'}>讨论与总结</Link></Menu.Item>
-                        <Menu.Item key="/recommend"><Link to={'/recommend'}>推荐阅读</Link></Menu.Item>
+                          selectedKeys={['/background']}>
+                        <Menu.Item key="/background"><Link to={'/background'}>后台管理</Link></Menu.Item>
                     </Menu>
                 </Header>
                 <Content style={{padding: '0 74px', margin: '16px 0'}}>
-                    <InnerNavigationRoute/>
+                    <BackgroundNavigationRoute/>
                 </Content>
                 <Footer className={index.footer}>
                     <Paragraph className={index.paragraph} style={{fontWeight: 'bold'}}>
@@ -48,4 +47,4 @@ class InnerNavigation extends Component {
     }
 }
 
-export default withRouter(InnerNavigation)
+export default BackgroundNavigation
