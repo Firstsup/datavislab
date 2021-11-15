@@ -6,13 +6,13 @@
 
 .carousel {
     margin: 30px auto;
-    width: 1100px;
-    height: 350px;
+    width: 840px;
+    height: 365px;
 }
 
 .imgDiv {
-    width: 1100px;
-    height: 350px;
+    width: 840px;
+    height: 365px;
 }
 
 .title {
@@ -25,6 +25,8 @@
     width: 1100px;
     line-height: 25px;
     font-size: 16px;
+    white-space: pre-line;
+    text-indent: 2em;
 }
 
 .card {

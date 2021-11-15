@@ -10,33 +10,33 @@ const {Meta} = Card
 
 const prize = [
     {
-        img: '/甘雨立绘.png',
-        alt: '甘雨',
-        title: '最温柔奖',
+        img: '/图片1.jfif',
+        alt: '图片1',
+        title: '奖1',
         date: '2021.11.10'
     },
     {
-        img: '/可莉立绘.png',
-        alt: '可莉',
-        title: '最可爱奖',
+        img: '/图片2.jfif',
+        alt: '图片2',
+        title: '奖2',
         date: '2021.11.11'
     },
     {
-        img: '/可莉立绘.png',
-        alt: '可莉',
-        title: '最可爱奖',
+        img: '/图片2.jfif',
+        alt: '图片2',
+        title: '奖2',
         date: '2021.11.11'
     },
     {
-        img: '/可莉立绘.png',
-        alt: '可莉',
-        title: '最可爱奖',
+        img: '/图片2.jfif',
+        alt: '图片2',
+        title: '奖2',
         date: '2021.11.11'
     },
     {
-        img: '/可莉立绘.png',
-        alt: '可莉',
-        title: '最可爱奖',
+        img: '/图片2.jfif',
+        alt: '图片2',
+        title: '奖2',
         date: '2021.11.11'
     }
 ]
@@ -55,7 +55,7 @@ const paper = [
 const patent = [
     {
         number: '321321.123',
-        title: '一种Genshin Impact选美比赛最终由甘雨获胜',
+        title: '一种专利最终由你获得',
         date: '2021.11.10'
     },
     {

@@ -22,7 +22,7 @@ class OuterNavigation extends Component {
 
     clickInner = () => {
         console.log(123)
-        this.props.history.push('/discussion')
+        this.props.history.push('/personal')
         this.props.history.go()
     }
 

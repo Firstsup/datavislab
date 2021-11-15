@@ -8,30 +8,30 @@ const news = [
     {
         id: 1,
         date: '2021.11.8',
-        title: 'Joel单抽出了狼末',
-        img: '/甘雨立绘.png',
-        alt: '甘雨'
+        title: '新闻1',
+        img: '/图片1.jfif',
+        alt: '图片1'
     },
     {
         id: 2,
         date: '2021.11.9',
-        title: '甘雨回来了吗',
-        img: '/可莉立绘.png',
-        alt: '可莉'
+        title: '新闻2',
+        img: '/图片2.jfif',
+        alt: '图片2'
     },
     {
         id: 3,
         date: '2021.11.10',
-        title: '甘雨回来了',
-        img: '/安柏立绘.jpeg',
-        alt: '安柏'
+        title: '新闻3',
+        img: '/图片3.jfif',
+        alt: '图片3'
     },
     {
         id: 4,
         date: '2021.11.11',
-        title: '今天要购物',
-        img: '/雷电将军立绘.png',
-        alt: '雷电将军'
+        title: '新闻4',
+        img: '/图片4.jfif',
+        alt: '图片4'
     }
 ]
 

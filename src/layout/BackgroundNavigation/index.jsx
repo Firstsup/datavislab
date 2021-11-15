@@ -2,7 +2,6 @@ import React, {Component} from 'react';
 import index from './index.module.css'
 import {Layout, Menu, Typography} from "antd";
 import {Link} from "react-router-dom";
-import OuterNavigationRoute from "../../routes/OuterNavigation";
 import BackgroundNavigationRoute from "../../routes/BackgroundNavigation";
 
 const {Header, Content, Footer} = Layout;
