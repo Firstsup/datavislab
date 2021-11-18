@@ -13,8 +13,7 @@
 }
 
 .menu {
-    float: left;
-    margin-left: 100px;
+    margin-left: 330px;
     width: 800px;
 }
 
@@ -30,4 +29,17 @@
 
 .paragraph {
     color: white;
+}
+
+.innerLayout {
+    margin: 30px auto;
+    width: 1100px;
+}
+
+.sider {
+    width: 256px;
+}
+
+.content {
+    margin-left: 100px;
 }

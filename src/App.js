@@ -13,8 +13,8 @@ export default class App extends Component {
             <ConfigProvider locale={cn}>
                 <BrowserRouter>
                     <Switch>
-                        {window.location.pathname === '/background' ?
-                            <BackgroundNavigation/> : (window.location.pathname === '/personal' || window.location.pathname === '/discussion' || window.location.pathname === '/recommend') ?
+                        {window.location.pathname.startsWith('/background') ?
+                            <BackgroundNavigation/> : (window.location.pathname === '/discussion' || window.location.pathname === '/recommend') ?
                                 <InnerNavigation/> : <OuterNavigation/>}
                     </Switch>
                 </BrowserRouter>

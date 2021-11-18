@@ -1,4 +1,4 @@
-import React, {Component, Fragment} from 'react';
+import React, {Component} from 'react';
 import index from './index.module.css'
 import Paragraph from "antd/es/typography/Paragraph";
 import {Button, Card, Input, Pagination, Space, Typography} from "antd";

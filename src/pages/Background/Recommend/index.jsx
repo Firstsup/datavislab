@@ -1,12 +1,12 @@
 import React, {Component} from 'react';
 import index from './index.module.css'
 
-class Personal extends Component {
+class Recommend extends Component {
     render() {
         return (
-            <div>personal</div>
+            <div>recommend</div>
         )
     }
 }
 
-export default Personal
+export default Recommend

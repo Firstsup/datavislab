@@ -5,7 +5,7 @@ import {Link, withRouter} from "react-router-dom";
 import InnerNavigationRoute from "../../routes/InnerNavigation";
 
 const {Header, Content, Footer} = Layout;
-const {Paragraph} = Typography;
+const {Paragraph, Link: AntdLink} = Typography;
 
 const labInformation = {
     ChineseName: '大数据可视分析实验室',
@@ -16,6 +16,15 @@ const labInformation = {
 }
 
 class InnerNavigation extends Component {
+    clickLogo = () => {
+        this.props.history.push('/index')
+        this.props.history.go()
+    }
+    clickBackground = () => {
+        this.props.history.push('/background')
+        this.props.history.go()
+    }
+
     render() {
         return (
             <Layout className={index.layout}>
@@ -24,7 +33,6 @@ class InnerNavigation extends Component {
                          onClick={this.clickLogo}/>
                     <Menu className={index.menu} theme="dark" mode="horizontal"
                           selectedKeys={[this.props.history.location.pathname]}>
-                        <Menu.Item key="/personal"><Link to={'/personal'}>个人主页</Link></Menu.Item>
                         <Menu.Item key="/discussion"><Link to={'/discussion'}>讨论与总结</Link></Menu.Item>
                         <Menu.Item key="/recommend"><Link to={'/recommend'}>推荐阅读</Link></Menu.Item>
                     </Menu>
@@ -40,7 +48,7 @@ class InnerNavigation extends Component {
                         联系电话：{labInformation.phone}&emsp;联系邮箱：{labInformation.email}
                     </Paragraph>
                     <Paragraph className={index.paragraph}>
-                        地址：{labInformation.address}
+                        地址：{labInformation.address}&emsp;<AntdLink onClick={this.clickBackground}>后台管理</AntdLink>
                     </Paragraph>
                 </Footer>
             </Layout>

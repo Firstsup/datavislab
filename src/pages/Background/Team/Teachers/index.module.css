@@ -1,0 +1,10 @@
+.img {
+    display: inline;
+    width: 147px;
+    height: 186px;
+    object-fit: cover;
+}
+
+.button {
+    margin-right: 30px;
+}

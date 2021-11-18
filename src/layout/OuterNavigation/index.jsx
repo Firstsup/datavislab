@@ -5,7 +5,7 @@ import index from './index.module.css'
 import OuterNavigationRoute from "../../routes/OuterNavigation";
 
 const {Header, Content, Footer} = Layout;
-const {Paragraph} = Typography;
+const {Paragraph, Link: AntdLink} = Typography;
 
 const labInformation = {
     ChineseName: '大数据可视分析实验室',
@@ -21,8 +21,12 @@ class OuterNavigation extends Component {
     }
 
     clickInner = () => {
-        console.log(123)
-        this.props.history.push('/personal')
+        this.props.history.push('/discussion')
+        this.props.history.go()
+    }
+
+    clickBackground = () => {
+        this.props.history.push('/background')
         this.props.history.go()
     }
 
@@ -40,7 +44,7 @@ class OuterNavigation extends Component {
                         <Menu.Item key="/achievements"><Link to={'/achievements'}>团队成果</Link></Menu.Item>
                         <Menu.Item key="/team"><Link to={'/team'}>团队成员</Link></Menu.Item>
                         <Menu.Item key="/about"><Link to={'/about'}>关于我们</Link></Menu.Item>
-                        <Menu.Item onClick={this.clickInner}>内部讨论</Menu.Item>
+                        <Menu.Item key="/inner" onClick={this.clickInner}>内部讨论</Menu.Item>
                     </Menu>
                 </Header>
                 <Content style={{padding: '0 74px', margin: '16px 0'}}>
@@ -54,7 +58,7 @@ class OuterNavigation extends Component {
                         联系电话：{labInformation.phone}&emsp;联系邮箱：{labInformation.email}
                     </Paragraph>
                     <Paragraph className={index.paragraph}>
-                        地址：{labInformation.address}
+                        地址：{labInformation.address}&emsp;<AntdLink onClick={this.clickBackground}>后台管理</AntdLink>
                     </Paragraph>
                 </Footer>
             </Layout>
