@@ -3,19 +3,19 @@ import {Link, withRouter} from "react-router-dom";
 import {Layout, Menu, Typography} from 'antd';
 import index from './index.module.css'
 import OuterNavigationRoute from "../../routes/OuterNavigation";
+import getFooter from "../../api/getFooter";
 
 const {Header, Content, Footer} = Layout;
 const {Paragraph, Link: AntdLink} = Typography;
 
-const labInformation = {
-    ChineseName: '大数据可视分析实验室',
-    EnglishName: 'Visual Analytic of Big Data Lab',
-    phone: '123123123',
-    email: '123123123@qq.com',
-    address: '创新中心B312'
-}
-
 class OuterNavigation extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            labInformation: {}
+        }
+    }
+
     clickLogo = () => {
         this.props.history.push('/index')
     }
@@ -30,7 +30,27 @@ class OuterNavigation extends Component {
         this.props.history.go()
     }
 
+    componentDidMount() {
+        getFooter().then(
+            result => {
+                if (result.code === 0) {
+                    this.setState({
+                        labInformation: {
+                            phone: result.data.phone,
+                            email: result.data.email,
+                            add: result.data.add
+                        }
+                    })
+                }
+                else {
+                    console.log(result.message)
+                }
+            }
+        )
+    }
+
     render() {
+        const labInformation = this.state.labInformation
         return (
             <Layout className={index.layout}>
                 <Header className="header">
@@ -58,7 +78,7 @@ class OuterNavigation extends Component {
                         联系电话：{labInformation.phone}&emsp;联系邮箱：{labInformation.email}
                     </Paragraph>
                     <Paragraph className={index.paragraph}>
-                        地址：{labInformation.address}&emsp;<AntdLink onClick={this.clickBackground}>后台管理</AntdLink>
+                        地址：{labInformation.add}&emsp;<AntdLink onClick={this.clickBackground}>后台管理</AntdLink>
                     </Paragraph>
                 </Footer>
             </Layout>
