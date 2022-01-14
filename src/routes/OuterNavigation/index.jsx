@@ -18,7 +18,7 @@ class OuterNavigationRoute extends Component {
                 <Route exact={true} path={'/directions'} component={Directions}/>
                 <Route exact={true} path={'/team'} component={Team}/>
                 <Route exact={true} path={'/achievements'} component={Achievements}/>
-                <Route exact={true} path={'/about'} component={About}/>
+                <Route exact={true} path={'/About'} component={About}/>
                 <Redirect to={'/index'}/>
             </Switch>
         )

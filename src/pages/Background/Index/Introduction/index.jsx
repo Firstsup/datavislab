@@ -1,33 +1,153 @@
 import React, {Component} from 'react';
 import Title from "antd/es/typography/Title";
-import {Button, Form, Input} from "antd";
+import {Button, Input, Spin, message} from "antd";
+import {PlusCircleOutlined, MinusCircleOutlined, ExclamationCircleOutlined} from "@ant-design/icons";
 import index from './index.module.css'
+import getIntroduction from "../../../../api/About/getIntroduction";
+import setIntroduction from "../../../../api/About/setIntroduction";
+import confirm from "antd/es/modal/confirm";
 
-const introduction = '电子科技大学大数据可视分析实验室。读书有感：从前读书，一目十行，读完作罢，书云亦云，如需记忆，死记硬背便可。现在读书，知作者资料，了解作品创作背景，一字一词一句，仔细斟酌品味，多有自己所感所思所悟，作品主旨与自身所悟合一终为所学所获。妙哉，妙哉！发怒，是用别人的错误惩罚自己；烦恼，是用自己的过失折磨自己；后悔，是用无奈的往事摧残自己；忧虑，是用虚拟的风险惊吓自己；孤独，是用自制的牢房禁锢自己；自卑，是用别人的长处抵毁自己。摒弃这些，你就会轻松许多！'
+let isUnmount = false
 
 class Introduction extends Component {
-    indexFinishForm = (value) => {
-        const arr = value.introduction.split('\n')
-        console.log(arr)
+    constructor(props) {
+        super(props);
+        this.state = {
+            controller: new AbortController(),
+            loading: true,
+            introduction: []
+        }
+    }
+
+    changeInput = (i) => {
+        return ((event) => {
+            let temp = this.state.introduction
+            temp[i] = event.target.value
+            if (!isUnmount) {
+                this.setState({
+                    introduction: temp
+                })
+            }
+        })
+    }
+
+    addItem = (i) => {
+        return (() => {
+            let temp = this.state.introduction
+            temp.splice(i + 1, 0, '')
+            if (!isUnmount) {
+                this.setState({
+                    introduction: temp
+                })
+            }
+        })
+    }
+
+    deleteItem = (i) => {
+        return (() => {
+            let temp = this.state.introduction
+            temp.splice(i, 1)
+            if (!isUnmount) {
+                this.setState({
+                    introduction: temp
+                })
+            }
+        })
+    }
+
+    indexFinishForm = () => {
+        const introduction = this.state.introduction.join('$segment$')
+        try {
+            setIntroduction(introduction, this.state.controller.signal, 2).then(
+                async result => {
+                    if (result.code === 0) {
+                        message.success('修改成功')
+                    } else {
+                        message.error(`修改失败，错误为${result.message}`)
+                        console.log(result.message)
+                    }
+                }
+            )
+        } catch (e) {
+            console.log('e:', e)
+        }
+    }
+
+    showConfirm = () => {
+        const that = this
+        confirm({
+            title: '确认修改吗',
+            icon: <ExclamationCircleOutlined/>,
+            okText: '确定',
+            cancelText: '取消',
+            onOk() {
+                that.indexFinishForm()
+            },
+            onCancel() {},
+        });
+    }
+
+    async componentDidMount() {
+        isUnmount = false
+        try {
+            await getIntroduction(this.state.controller.signal, 2).then(
+                result => {
+                    if (result.code === 0) {
+                        if (!isUnmount) {
+                            this.setState({
+                                introduction: result.data.introduction.split('$segment$')
+                            })
+                        }
+                    } else {
+                        console.log(result.message)
+                    }
+                }
+            )
+        } catch (e) {
+            console.log('e:', e)
+        }
+
+        if (!isUnmount) {
+            await this.setState({
+                loading: false
+            })
+        }
+    }
+
+    componentWillUnmount() {
+        this.state.controller.abort()
+        isUnmount = true
     }
 
     render() {
-        return (
-            <div>
-                <Title level={3}>实验室简介</Title>
-                <Form style={{marginTop: '20px'}} initialValues={{introduction: introduction}}
-                      onFinish={this.indexFinishForm}>
-                    <Form.Item name={'introduction'}>
-                        <Input.TextArea autoSize={true}/>
-                    </Form.Item>
-                    <Form.Item>
-                        <Button className={index.button} type="primary" htmlType="submit">
-                            修改
-                        </Button>
-                    </Form.Item>
-                </Form>
-            </div>
-        )
+        if (this.state.loading === true) {
+            return (
+                <div className={index.spin}>
+                    <Spin size={"large"}/>
+                </div>
+            )
+        } else {
+            return (
+                <div>
+                    <Title level={3}>实验室简介</Title>
+                    <Button style={{marginBottom: '13px', marginRight: '32px'}} className={index.smallButton}
+                            onClick={this.addItem(-1)} type={'link'}
+                            icon={<PlusCircleOutlined/>}/>
+                    {this.state.introduction.map((d, i) => {
+                        return (
+                            <div style={{marginBottom: '45px'}} key={i}>
+                                <Input.TextArea autoSize={true} value={d} onChange={this.changeInput(i)}/>
+                                <Button className={index.smallButton} onClick={this.deleteItem(i)} type={'link'}
+                                        icon={<MinusCircleOutlined/>}/>
+                                <Button className={index.smallButton} onClick={this.addItem(i)} type={'link'}
+                                        icon={<PlusCircleOutlined/>}/>
+                            </div>
+                        )
+                    })}
+                    <Button className={index.button} type="primary" onClick={this.showConfirm}>修改</Button>
+                </div>
+            )
+        }
     }
 }
 

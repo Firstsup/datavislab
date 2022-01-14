@@ -21,11 +21,10 @@
 }
 
 .paragraph {
-    margin: 30px auto auto;
+    margin: 0 auto;
     width: 1100px;
-    line-height: 25px;
+    line-height: 30px;
     font-size: 16px;
-    white-space: pre-line;
     text-indent: 2em;
 }
 
@@ -46,4 +45,9 @@
 .cardDiv {
     width: 1100px;
     margin: 30px auto auto;
+}
+
+.spin {
+    margin: 300px 0;
+    text-align: center;
 }

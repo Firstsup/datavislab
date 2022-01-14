@@ -1,255 +1,781 @@
 import React, {Component} from 'react';
 import index from './index.module.css'
-import {Button, Drawer, Form, Input, List, message, Typography, Upload} from "antd";
+import {Button, DatePicker, Drawer, Input, List, message, Spin, Typography, Upload} from "antd";
 import Title from "antd/es/typography/Title";
-import {DownCircleOutlined, UpCircleOutlined, UploadOutlined} from "@ant-design/icons";
+import {
+    DownCircleOutlined,
+    ExclamationCircleOutlined, UpCircleOutlined,
+    UploadOutlined
+} from "@ant-design/icons";
+import studentDown from "../../../../api/Team/studentDown";
+import studentUp from "../../../../api/Team/studentUp";
+import getStudent from "../../../../api/Team/getStudent";
+import getImageUrl from "../../../../api/Qiniu/getImageUrl";
+import deleteStudent from "../../../../api/Team/deleteStudent";
+import {v4 as uuidv4} from "uuid";
+import getImageToken from "../../../../api/Qiniu/getImageToken";
+import confirm from "antd/es/modal/confirm";
+import checkStudent from "../../../../api/Team/checkStudent";
+import addStudent from "../../../../api/Team/addStudent";
+import moment from "moment";
+import timeConversion from "../../../../utils/TimeConversion";
+import modifyStudent from "../../../../api/Team/modifyStudent";
+import ImgCrop from "antd-img-crop";
 
 const {Link} = Typography;
 
-const students = [
-    {
-        img: '/图片2.jfif',
-        graduate: '2020',
-        name: '图片2',
-        research: '方向2',
-        email: '123123123@qq.com',
-        introduction: '我是图片2'
-    },
-    {
-        img: '/图片3.jfif',
-        graduate: '2021',
-        name: '图片3',
-        research: '方向3',
-        email: '123123123@qq.com',
-        introduction: '我是图片3'
-    },
-    {
-        img: '/图片4.jfif',
-        graduate: '2022',
-        name: '图片4',
-        research: '方向4',
-        email: '123123123@qq.com',
-        introduction: '我是图片4'
-    },
-    {
-        img: '/图片5.jfif',
-        graduate: '2023',
-        name: '图片5',
-        research: '方向5',
-        email: '123123123@qq.com',
-        introduction: '我是图片5'
-    }
-]
-const data = students.map((d) => {
-    return d.name
-})
-const props = {
-    name: 'file',
-    action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
-    headers: {
-        authorization: 'authorization-text',
-    },
-    onChange(info) {
-        if (info.file.status !== 'uploading') {
-            console.log(info.file, info.fileList);
-        }
-        if (info.file.status === 'done') {
-            message.success(`${info.file.name} file uploaded successfully`);
-        } else if (info.file.status === 'error') {
-            message.error(`${info.file.name} file upload failed.`);
-        }
-    },
-};
+let isUnmount = false
 
 class Students extends Component {
     constructor(props) {
         super(props);
         this.state = {
             visible: false,
-            i: '',
-            operate: '修改'
+            operateI: null,
+            operate: '',
+            controller: new AbortController(),
+            loading: true,
+            students: [],
+            fileList: [],
+            uploadToken: '',
+            fileName: '',
+            newItem: {}
         }
-        this.formRef = React.createRef()
     }
 
     moveUp = (item) => {
-        return (() => {
-            if (item === data[0]) {
-                message.info('已经是第一个了').then(r => {
-                })
+        return (async () => {
+            if (this.state.students[0].name === item) {
+                message.info('已经是第一个了')
             } else {
-                const i = data.indexOf(item)
-                data[i] = data[i - 1]
-                data[i - 1] = item
-                //fetch
+                let id
+                for (let i = 0; i < this.state.students.length; i++) {
+                    if (this.state.students[i].name === item) {
+                        id = this.state.students[i].id
+                    }
+                }
+                try {
+                    await studentUp(id, this.state.controller.signal, 2).then(
+                        async result => {
+                            if (result.code === 0) {
+                                message.success('上移成功')
+                                await getStudent(this.state.controller.signal, 2).then(
+                                    result => {
+                                        if (result.code === 0) {
+                                            if (!isUnmount) {
+                                                this.setState({
+                                                    students: result.data.students
+                                                })
+                                            }
+                                        } else {
+                                            console.log(result.message)
+                                        }
+                                    }
+                                )
+                            } else {
+                                message.error(`上移失败，错误为${result.message}`)
+                            }
+                        }
+                    )
+                } catch (e) {
+                    console.log('e:', e)
+                }
             }
         })
     }
 
     moveDown = (item) => {
-        return (() => {
-            if (item === data[data.length - 1]) {
-                message.info('已经是最后一个了').then(r => {
-                })
+        return (async () => {
+            if (this.state.students[this.state.students.length - 1].name === item) {
+                message.info('已经是最后一个了')
             } else {
-                const i = data.indexOf(item)
-                data[i] = data[i + 1]
-                data[i + 1] = item
-                //fetch
+                let id
+                for (let i = 0; i < this.state.students.length; i++) {
+                    if (this.state.students[i].name === item) {
+                        id = this.state.students[i].id
+                    }
+                }
+                try {
+                    await studentDown(id, this.state.controller.signal, 2).then(
+                        async result => {
+                            if (result.code === 0) {
+                                message.success('下移成功')
+                                await getStudent(this.state.controller.signal, 2).then(
+                                    result => {
+                                        if (result.code === 0) {
+                                            if (!isUnmount) {
+                                                this.setState({
+                                                    students: result.data.students
+                                                })
+                                            }
+                                        } else {
+                                            console.log(result.message)
+                                        }
+                                    }
+                                )
+                            } else {
+                                message.error(`下移失败，错误为${result.message}`)
+                            }
+                        }
+                    )
+                } catch (e) {
+                    console.log('e:', e)
+                }
             }
         })
     }
 
     modifyItem = (item) => {
-        return (() => {
-            this.setState({
-                i: data.indexOf(item),
-                visible: true,
-                operate: '修改'
-            }, () => {
-                if (this.formRef.current !== null) {
-                    this.formRef.current.resetFields(['name', students[this.state.i].name])
-                    this.formRef.current.resetFields(['email', students[this.state.i].email])
-                    this.formRef.current.resetFields(['graduate', students[this.state.i].graduate])
-                    this.formRef.current.resetFields(['research', students[this.state.i].research])
-                    this.formRef.current.resetFields(['introduction', students[this.state.i].introduction])
+        return (async () => {
+            let operateI
+            for (let i = 0; i < this.state.students.length; i++) {
+                if (this.state.students[i].name === item) {
+                    operateI = i
                 }
-            })
-        })
-    }
-
-    deleteItem = (item) => {
-        return (() => {
-            data.splice(data.indexOf(item), 1)
-            console.log(data)
-        })
-    }
-
-    onClose = () => {
-        this.setState({
-            i: '',
-            visible: false
-        })
-    }
-
-    handleOk = (value) => {
-        this.setState({
-            i: '',
-            visible: false
-        })
-        console.log(value)
-    }
-
-    addItem = () => {
-        this.setState({
-            operate: '新增',
-            visible: true
-        }, () => {
-            if (this.formRef.current !== null) {
-                this.formRef.current.resetFields(['name', ''])
-                this.formRef.current.resetFields(['email', ''])
-                this.formRef.current.resetFields(['graduate', ''])
-                this.formRef.current.resetFields(['research', ''])
-                this.formRef.current.resetFields(['introduction', ''])
+            }
+            if (!isUnmount) {
+                await this.setState({
+                    operateI: operateI,
+                    visible: true,
+                    operate: '修改'
+                })
+            }
+            try {
+                await getImageUrl(this.state.students[operateI].cover, this.state.controller.signal, 2).then(
+                    result => {
+                        if (result.code === 0) {
+                            let temp = [...this.state.students]
+                            temp[operateI]['img'] = result.data.privateDownloadUrl
+                            temp[operateI]['alt'] = `studentImg${operateI}`
+                            if (!isUnmount) {
+                                this.setState({
+                                    students: temp
+                                })
+                            }
+                        } else {
+                            console.log(result.message)
+                        }
+                    }
+                )
+            } catch (e) {
+                console.log('e:', e)
             }
         })
     }
 
-    render() {
-        const {visible, i, operate} = this.state
-        return (
-            <>
-                <Title level={3}>学生</Title>
-                <List
-                    style={{background: 'white', marginTop: '20px'}}
-                    size="large"
-                    bordered
-                    dataSource={data}
-                    renderItem={item => <List.Item
-                        actions={[<Button onClick={this.moveUp(item)} type={'link'} icon={<UpCircleOutlined/>}/>,
-                            <Button onClick={this.moveDown(item)} type={'link'} icon={<DownCircleOutlined/>}/>,
-                            <Link onClick={this.modifyItem(item)}>修改</Link>,
-                            <Link onClick={this.deleteItem(item)}>删除</Link>]}>{item}</List.Item>}
-                />
-                <Button style={{marginTop: '20px'}} onClick={this.addItem}>
-                    新增
-                </Button>
-                <Drawer
-                    title={operate}
-                    width={720}
-                    onClose={this.onClose}
-                    visible={visible}
-                    bodyStyle={{paddingBottom: 80}}
-                >
-                    {i === '' ?
-                        <Form ref={this.formRef} onFinish={this.handleOk}>
-                            <Form.Item rules={[{required: true, message: '请上传'}]}>
-                                <Upload {...props}>
-                                    <Button icon={<UploadOutlined/>}
-                                            style={{display: 'inline'}}>上传</Button>
-                                </Upload>
-                            </Form.Item>
-                            <Form.Item label={'姓名'} name={'name'} rules={[{required: true, message: '请输入'}]}>
-                                <Input/>
-                            </Form.Item>
-                            <Form.Item label={'邮箱'} name={'email'}>
-                                <Input/>
-                            </Form.Item>
-                            <Form.Item label={'毕业年份'} name={'graduate'} rules={[{required: true, message: '请输入'}]}>
-                                <Input/>
-                            </Form.Item>
-                            <Form.Item label={'研究方向'} name={'research'}>
-                                <Input/>
-                            </Form.Item>
-                            <Form.Item label={'个人简介'} name={'introduction'}>
-                                <Input.TextArea autoSize={true}/>
-                            </Form.Item>
-                            <Form.Item>
-                                <Button style={{float: 'right', marginRight: '50px'}} type="primary" htmlType="submit">
-                                    {operate}
-                                </Button>
-                            </Form.Item>
-                        </Form> :
-                        <Form ref={this.formRef} onFinish={this.handleOk}
-                              initialValues={{
-                                  name: students[i].name,
-                                  email: students[i].email,
-                                  graduate: students[i].graduate,
-                                  research: students[i].research,
-                                  introduction: students[i].introduction
-                              }}>
-                            <Form.Item rules={[{required: true, message: '请上传'}]}>
-                                <img className={index.img} src={students[i].img} alt={students[i].name}/>
-                                <Upload {...props}>
-                                    <Button icon={<UploadOutlined/>}
-                                            style={{display: 'inline', marginLeft: '30px'}}>替换</Button>
-                                </Upload>
-                            </Form.Item>
-                            <Form.Item label={'姓名'} name={'name'} rules={[{required: true, message: '请输入'}]}>
-                                <Input/>
-                            </Form.Item>
-                            <Form.Item label={'邮箱'} name={'email'}>
-                                <Input/>
-                            </Form.Item>
-                            <Form.Item label={'毕业年份'} name={'graduate'} rules={[{required: true, message: '请输入'}]}>
-                                <Input/>
-                            </Form.Item>
-                            <Form.Item label={'研究方向'} name={'research'}>
-                                <Input/>
-                            </Form.Item>
-                            <Form.Item label={'个人简介'} name={'introduction'}>
-                                <Input.TextArea autoSize={true}/>
-                            </Form.Item>
-                            <Form.Item>
-                                <Button style={{float: 'right', marginRight: '50px'}} type="primary" htmlType="submit">
-                                    {operate}
-                                </Button>
-                            </Form.Item>
-                        </Form>
+    deleteItem = async (item) => {
+        let id
+        for (let i = 0; i < this.state.students.length; i++) {
+            if (this.state.students[i].name === item) {
+                id = this.state.students[i].id
+            }
+        }
+        try {
+            await deleteStudent(id, this.state.controller.signal, 2).then(
+                async result => {
+                    if (result.code === 0) {
+                        message.success('删除成功')
+                        await getStudent(this.state.controller.signal, 2).then(
+                            result => {
+                                if (result.code === 0) {
+                                    if (!isUnmount) {
+                                        this.setState({
+                                            students: result.data.students
+                                        })
+                                    }
+                                } else {
+                                    console.log(result.message)
+                                }
+                            }
+                        )
+                    } else {
+                        message.error(`删除失败，错误为${result.message}`)
                     }
-                </Drawer>
-            </>
-        )
+                }
+            )
+        } catch (e) {
+            console.log('e:', e)
+        }
+    }
+
+    changeName = (operateI) => {
+        return (event => {
+            if (operateI !== -1) {
+                let temp = this.state.students
+                temp[operateI].name = event.target.value
+                if (!isUnmount) {
+                    this.setState({
+                        students: temp
+                    })
+                }
+            } else {
+                let temp = this.state.newItem
+                temp.name = event.target.value
+                if (!isUnmount) {
+                    this.setState({
+                        newItem: temp
+                    })
+                }
+            }
+        })
+    }
+
+    changeGraduate = (operateI) => {
+        return (event => {
+            if (operateI !== -1) {
+                let temp = this.state.students
+                temp[operateI].graduate = Math.floor((event.valueOf()) / 1000)
+                if (!isUnmount) {
+                    this.setState({
+                        students: temp
+                    })
+                }
+            } else {
+                let temp = this.state.newItem
+                temp.graduate = Math.floor((event.valueOf()) / 1000)
+                if (!isUnmount) {
+                    this.setState({
+                        newItem: temp
+                    })
+                }
+            }
+        })
+    }
+
+    changeResearch = (operateI) => {
+        return (event => {
+            if (operateI !== -1) {
+                let temp = this.state.students
+                temp[operateI].research = event.target.value
+                if (!isUnmount) {
+                    this.setState({
+                        students: temp
+                    })
+                }
+            } else {
+                let temp = this.state.newItem
+                temp.research = event.target.value
+                if (!isUnmount) {
+                    this.setState({
+                        newItem: temp
+                    })
+                }
+            }
+        })
+    }
+
+    changeEmail = (operateI) => {
+        return (event => {
+            if (operateI !== -1) {
+                let temp = this.state.students
+                temp[operateI].email = event.target.value
+                if (!isUnmount) {
+                    this.setState({
+                        students: temp
+                    })
+                }
+            } else {
+                let temp = this.state.newItem
+                temp.email = event.target.value
+                if (!isUnmount) {
+                    this.setState({
+                        newItem: temp
+                    })
+                }
+            }
+        })
+    }
+
+    changeIntroduction = (operateI) => {
+        return (event => {
+            if (operateI !== -1) {
+                let temp = this.state.students
+                temp[operateI].introduction = event.target.value
+                if (!isUnmount) {
+                    this.setState({
+                        students: temp
+                    })
+                }
+            } else {
+                let temp = this.state.newItem
+                temp.introduction = event.target.value
+                if (!isUnmount) {
+                    this.setState({
+                        newItem: temp
+                    })
+                }
+            }
+        })
+    }
+
+    changeUpload = async (info) => {
+        if (info.file.status === 'done') {
+            message.destroy('loading')
+            message.success(`${info.file.name}上传成功`)
+            if (this.state.operateI !== -1) {
+                let temp = [...this.state.students]
+                try {
+                    temp[this.state.operateI].cover = this.state.fileName
+                    await getImageUrl(this.state.students[this.state.operateI].cover, this.state.controller.signal, 2).then(
+                        result => {
+                            if (result.code === 0) {
+                                temp[this.state.operateI]['img'] = result.data.privateDownloadUrl
+                                if (!isUnmount) {
+                                    this.setState({
+                                        students: temp
+                                    })
+                                }
+                            } else {
+                                console.log(result.message)
+                            }
+                        }
+                    )
+                } catch (e) {
+                    console.log('e:', e)
+                }
+            } else {
+                let temp = {...this.state.newItem}
+                try {
+                    temp.cover = this.state.fileName
+                    await getImageUrl(temp.cover, this.state.controller.signal, 2).then(
+                        result => {
+                            if (result.code === 0) {
+                                temp['img'] = result.data.privateDownloadUrl
+                                temp['alt'] = 'newImg'
+                                if (!isUnmount) {
+                                    this.setState({
+                                        newItem: temp
+                                    })
+                                }
+                            } else {
+                                console.log(result.message)
+                            }
+                        }
+                    )
+                } catch (e) {
+                    console.log('e:', e)
+                }
+            }
+        } else if (info.file.status === 'error') {
+            message.destroy('loading')
+            message.error(`${info.file.name}上传失败`);
+        }
+    }
+
+    setFile = async (file) => {
+        message.loading({
+            content: `${file.name}上传中……`,
+            key: 'loading',
+            duration: 0
+        })
+        const fileName = uuidv4()
+        if (!isUnmount) {
+            await this.setState({
+                fileList: [file],
+                fileName: fileName
+            })
+        }
+        try {
+            await getImageToken(this.state.fileName, this.state.controller.signal, 2).then(
+                result => {
+                    if (result.code === 0) {
+                        if (!isUnmount) {
+                            this.setState({
+                                uploadToken: result.data.uploadToken
+                            })
+                        }
+                    } else {
+                        console.log(result.message)
+                    }
+                }
+            )
+        } catch (e) {
+            console.log('e:', e)
+        }
+    }
+
+    onClose = async () => {
+        if (!isUnmount) {
+            this.setState({
+                visible: false
+            })
+        }
+        try {
+            await getStudent(this.state.controller.signal, 2).then(
+                result => {
+                    if (result.code === 0) {
+                        if (!isUnmount) {
+                            this.setState({
+                                students: result.data.students
+                            })
+                        }
+                    } else {
+                        console.log(result.message)
+                    }
+                }
+            )
+        } catch (e) {
+            console.log('e:', e)
+        }
+    }
+
+    showConfirmModify = async () => {
+        const {students} = this.state
+        let flag = true
+        for (let i = 0; i < students.length; i++) {
+            if (students[i].cover === '' || students[i].name === '' || students[i].graduate === '') {
+                flag = false
+            }
+        }
+        if (flag === false) {
+            message.warning('请将信息填写完整')
+        } else {
+            const that = this
+            let oldName
+            await getStudent(this.state.controller.signal, 2).then(
+                result => {
+                    if (result.code === 0) {
+                        oldName = result.data.students[this.state.operateI].name
+                    } else {
+                        console.log(result.message)
+                    }
+                }
+            )
+            await checkStudent(students[this.state.operateI].name, oldName, this.state.controller.signal, 2).then(
+                result => {
+                    if (result.code === 0) {
+                        confirm({
+                            title: '确认修改吗',
+                            icon: <ExclamationCircleOutlined/>,
+                            okText: '确定',
+                            cancelText: '取消',
+                            onOk() {
+                                that.handleOk()
+                            },
+                            onCancel() {
+                            },
+                        });
+                    } else {
+                        message.warning('姓名已存在，请更换')
+                    }
+                }
+            )
+        }
+    }
+
+    showConfirmAdd = async () => {
+        const {newItem} = this.state
+        if (newItem.cover === '' || newItem.name === '' || newItem.graduate === '') {
+            message.warning('请将信息填写完整')
+        } else {
+            const that = this
+            await checkStudent(newItem.name, '', this.state.controller.signal, 2).then(
+                result => {
+                    if (result.code === 0) {
+                        confirm({
+                            title: '确认添加吗',
+                            icon: <ExclamationCircleOutlined/>,
+                            okText: '确定',
+                            cancelText: '取消',
+                            onOk() {
+                                that.handleOk()
+                            },
+                            onCancel() {
+                            },
+                        });
+                    } else {
+                        message.warning('姓名已存在，请更换')
+                    }
+                }
+            )
+        }
+    }
+
+    showConfirmDelete = (item) => {
+        const that = this
+        return (() => {
+            confirm({
+                title: '确认删除吗',
+                icon: <ExclamationCircleOutlined/>,
+                okText: '确定',
+                cancelText: '取消',
+                onOk() {
+                    that.deleteItem(item)
+                },
+                onCancel() {
+                },
+            });
+        })
+    }
+
+    handleOk = async () => {
+        if (!isUnmount) {
+            this.setState({
+                visible: false
+            })
+        }
+        try {
+            if (this.state.operateI !== -1) {
+                await modifyStudent(this.state.students[this.state.operateI], this.state.controller.signal, 2).then(
+                    result => {
+                        if (result.code === 0) {
+                            message.success('修改成功')
+                        } else {
+                            message.error(`修改失败，错误为${result.message}`)
+                        }
+                    }
+                )
+            } else {
+                await addStudent(this.state.newItem, this.state.controller.signal, 2).then(
+                    result => {
+                        if (result.code === 0) {
+                            message.success('添加成功')
+                        } else {
+                            message.error(`添加失败，错误为${result.message}`)
+                        }
+                    }
+                )
+            }
+            await getStudent(this.state.controller.signal, 2).then(
+                result => {
+                    if (result.code === 0) {
+                        if (!isUnmount) {
+                            this.setState({
+                                students: result.data.students
+                            })
+                        }
+                    } else {
+                        console.log(result.message)
+                    }
+                }
+            )
+        } catch (e) {
+            console.log('e:', e)
+        }
+    }
+
+    addItem = () => {
+        if (!isUnmount) {
+            this.setState({
+                newItem: {
+                    cover: '',
+                    name: '',
+                    graduate: new Date().valueOf() / 1000,
+                    research: '',
+                    email: '',
+                    introduction: ''
+                },
+                operateI: -1,
+                operate: '新增',
+                visible: true
+            })
+        }
+    }
+
+    async componentDidMount() {
+        isUnmount = false
+        try {
+            await getStudent(this.state.controller.signal, 2).then(
+                result => {
+                    if (result.code === 0) {
+                        if (!isUnmount) {
+                            this.setState({
+                                students: result.data.students
+                            })
+                        }
+                    } else {
+                        console.log(result.message)
+                    }
+                }
+            )
+        } catch (e) {
+            console.log('e:', e)
+        }
+
+        if (!isUnmount) {
+            await this.setState({
+                loading: false
+            })
+        }
+    }
+
+    componentWillUnmount() {
+        this.state.controller.abort()
+        isUnmount = true
+    }
+
+    render() {
+        if (this.state.loading === true) {
+            return (
+                <div className={index.spin}>
+                    <Spin size={"large"}/>
+                </div>
+            )
+        } else {
+            const {visible, operateI, operate, students, newItem} = this.state
+            const data = {
+                token: this.state.uploadToken,
+                key: this.state.fileName
+            }
+            return (
+                <>
+                    <Title level={3}>学生</Title>
+                    <List
+                        style={{background: 'white', marginTop: '20px'}}
+                        size="large"
+                        bordered
+                        dataSource={students.map((d) => {
+                            return d.name
+                        })}
+                        renderItem={item => <List.Item
+                            actions={[<Button onClick={this.moveUp(item)} type={'link'} icon={<UpCircleOutlined/>}/>,
+                                <Button onClick={this.moveDown(item)} type={'link'} icon={<DownCircleOutlined/>}/>,
+                                <Link onClick={this.modifyItem(item)}>修改</Link>,
+                                <Link onClick={this.showConfirmDelete(item)}>删除</Link>
+                            ]}>{item}</List.Item>}
+                    />
+                    <Button style={{marginTop: '20px'}} onClick={this.addItem}>
+                        新增
+                    </Button>
+                    {operate === '' ? <></> : <Drawer
+                        title={operate}
+                        width={720}
+                        onClose={this.onClose}
+                        visible={visible}
+                        bodyStyle={{paddingBottom: 80}}
+                    >
+                        {operate === '新增' ?
+                            <div>
+                                <div className={index.div}>
+                                    <span className={index.star}>*</span>
+                                    <span>照片：</span>
+                                    {newItem.cover === "" ?
+                                        <ImgCrop aspect={147 / 186} quality={1}>
+                                            <Upload
+                                                beforeUpload={
+                                                    file => this.setFile(file)
+                                                }
+                                                showUploadList={false}
+                                                action={'http://up-z2.qiniup.com'}
+                                                data={data}
+                                                fileList={this.state.fileList}
+                                                onChange={this.changeUpload}>
+                                                <Button icon={<UploadOutlined/>}
+                                                        style={{display: 'inline'}}>上传照片</Button>
+                                            </Upload>
+                                        </ImgCrop>
+                                        :
+                                        <>
+                                            <img className={index.img} src={newItem.img}
+                                                 alt={newItem.alt}/>
+                                            <ImgCrop aspect={147 / 186} quality={1}>
+                                                <Upload
+                                                    beforeUpload={
+                                                        file => this.setFile(file)
+                                                    }
+                                                    showUploadList={false}
+                                                    action={'http://up-z2.qiniup.com'}
+                                                    data={data}
+                                                    fileList={this.state.fileList}
+                                                    onChange={this.changeUpload}>
+                                                    <Button icon={<UploadOutlined/>}
+                                                            style={{display: 'inline', marginLeft: '30px'}}>替换</Button>
+                                                </Upload>
+                                            </ImgCrop>
+                                        </>
+                                    }
+                                </div>
+                                <div className={index.div}>
+                                    <span className={index.star}>*</span>
+                                    <span>姓名：</span>
+                                    <Input style={{width: '300px'}} value={this.state.newItem.name}
+                                           onChange={this.changeName(operateI)}/>
+                                </div>
+                                <div className={index.div}>
+                                    <span className={index.star}>*</span>
+                                    <span>毕业年份：</span>
+                                    <DatePicker picker={'year'}
+                                                value={moment(timeConversion(newItem.graduate), 'YYYY-MM-DD')}
+                                                onChange={this.changeGraduate(operateI)}/>
+                                </div>
+                                <div className={index.div}>
+                                    <span>研究方向：</span>
+                                    <Input style={{width: '300px'}} value={this.state.newItem.research}
+                                           onChange={this.changeResearch(operateI)}/>
+                                </div>
+                                <div className={index.div}>
+                                    <span>邮箱：</span>
+                                    <Input style={{width: '300px'}} value={this.state.newItem.email}
+                                           onChange={this.changeEmail(operateI)}/>
+                                </div>
+                                <div className={index.div}>
+                                    <span>个人介绍：</span>
+                                    <Input.TextArea style={{marginTop: '10px'}} autoSize={true}
+                                                    value={this.state.newItem.introduction}
+                                                    onChange={this.changeIntroduction(operateI)}/>
+                                </div>
+                                <Button style={{float: "right", marginRight: '30px', marginTop: '20px'}} type="primary"
+                                        onClick={this.showConfirmAdd}>新增</Button>
+                            </div>
+                            :
+                            <div>
+                                <div className={index.div}>
+                                    <span className={index.star}>*</span>
+                                    <span>照片：</span>
+                                    <img className={index.img} src={students[operateI].img}
+                                         alt={students[operateI].alt}/>
+                                    <ImgCrop aspect={147 / 186} quality={1}>
+                                        <Upload
+                                            beforeUpload={
+                                                file => this.setFile(file)
+                                            }
+                                            showUploadList={false}
+                                            action={'http://up-z2.qiniup.com'}
+                                            data={data}
+                                            fileList={this.state.fileList}
+                                            onChange={this.changeUpload}>
+                                            <Button icon={<UploadOutlined/>}
+                                                    style={{display: 'inline', marginLeft: '30px'}}>替换</Button>
+                                        </Upload>
+                                    </ImgCrop>
+                                </div>
+                                <div className={index.div}>
+                                    <span className={index.star}>*</span>
+                                    <span>姓名：</span>
+                                    <Input style={{width: '300px'}} value={students[operateI].name}
+                                           onChange={this.changeName(operateI)}/>
+                                </div>
+                                <div className={index.div}>
+                                    <span className={index.star}>*</span>
+                                    <span>毕业年份：</span>
+                                    <DatePicker picker={'year'}
+                                                value={moment(timeConversion(students[operateI].graduate), 'YYYY-MM-DD')}
+                                                onChange={this.changeGraduate(operateI)}/>
+                                </div>
+                                <div className={index.div}>
+                                    <span>研究方向：</span>
+                                    <Input style={{width: '300px'}} value={students[operateI].research}
+                                           onChange={this.changeResearch(operateI)}/>
+                                </div>
+                                <div className={index.div}>
+                                    <span>邮箱：</span>
+                                    <Input style={{width: '300px'}} value={students[operateI].email}
+                                           onChange={this.changeEmail(operateI)}/>
+                                </div>
+                                <div className={index.div}>
+                                    <span>个人介绍：</span>
+                                    <Input.TextArea style={{marginTop: '10px'}} autoSize={true}
+                                                    value={students[operateI].introduction}
+                                                    onChange={this.changeIntroduction(operateI)}/>
+                                </div>
+                                <Button style={{float: "right", marginRight: '30px', marginTop: '20px'}} type="primary"
+                                        onClick={this.showConfirmModify}>修改</Button>
+                            </div>
+                        }
+                    </Drawer>}
+                </>
+            )
+        }
     }
 }
 

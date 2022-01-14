@@ -4,3 +4,20 @@
     height: 220px;
     object-fit: cover;
 }
+
+.spin {
+    margin: 300px 0;
+    text-align: center;
+}
+
+.div {
+    margin-bottom: 20px;
+}
+
+.star {
+    color: red;
+}
+
+.smallButton {
+    float: right;
+}

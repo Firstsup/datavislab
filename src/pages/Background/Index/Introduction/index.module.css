@@ -2,3 +2,12 @@
     margin-right: 30px;
     float: right;
 }
+
+.spin {
+    margin: 300px 0;
+    text-align: center;
+}
+
+.smallButton {
+    float: right;
+}

@@ -26,7 +26,7 @@ class BackgroundNavigationRoute extends Component {
                 <Route exact={true} path={'/background/achievements/patent'} component={Patent}/>
                 <Route exact={true} path={'/background/team/teachers'} component={Teachers}/>
                 <Route exact={true} path={'/background/team/students'} component={Students}/>
-                <Route exact={true} path={'/background/about'} component={About}/>
+                <Route exact={true} path={'/background/About'} component={About}/>
                 <Route exact={true} path={'/background/discussion'} component={Discussion}/>
                 <Route exact={true} path={'/background/recommend'} component={Recommend}/>
                 <Redirect to={'/background/index/carousel'}/>

@@ -1,206 +1,760 @@
-import React, {Component, Fragment} from 'react';
+import React, {Component} from 'react';
 import index from './index.module.css'
 import Title from "antd/es/typography/Title";
-import {Button, Form, Input, message, Upload, List, Typography, Drawer} from "antd";
-import {DownCircleOutlined, UpCircleOutlined, UploadOutlined} from "@ant-design/icons";
+import {Button, Input, message, Upload, List, Typography, Drawer, Spin} from "antd";
+import {
+    DownCircleOutlined,
+    ExclamationCircleOutlined, MinusCircleOutlined,
+    PlusCircleOutlined,
+    UpCircleOutlined,
+    UploadOutlined
+} from "@ant-design/icons";
+import directionUp from "../../../api/Directions/directionUp";
+import getDirection from "../../../api/Directions/getDirection";
+import directionDown from "../../../api/Directions/directionDown";
+import getImageUrl from "../../../api/Qiniu/getImageUrl";
+import deleteDirection from "../../../api/Directions/deleteDirection";
+import {v4 as uuidv4} from "uuid";
+import getImageToken from "../../../api/Qiniu/getImageToken";
+import confirm from "antd/es/modal/confirm";
+import modifyDirection from "../../../api/Directions/modifyDirection";
+import addDirection from "../../../api/Directions/addDirection";
+import checkDirection from "../../../api/Directions/checkDirection";
+import ImgCrop from "antd-img-crop";
 
 const {Link} = Typography;
 
-let directions = [
-    {
-        img: '/图片1.jfif',
-        alt: '图片1',
-        name: '方向1',
-        introduction: '方向1因何而发生?奥斯特洛夫斯基在不经意间这样说过，共同的事业，共同的斗争，可以使人们产生忍受一切的力量。　我希望诸位也能好好地体会这句话。 我们一般认为，抓住了问题的关键，其他一切则会迎刃而解。 问题的关键究竟为何? 斯宾诺莎在不经意间这样说过，最大的骄傲于最大的自卑都表示心灵的最软弱无力。这不禁令我深思。 一般来说， 一般来说， 黑格尔在不经意间这样说过，只有永远躺在泥坑里的人，才不会再掉进坑里。这不禁令我深思。 我们不得不面对一个非常尴尬的事实，那就是， 我们不得不面对一个非常尴尬的事实，那就是， 要想清楚，冰弓，到底是一种怎么样的存在。'
-    },
-    {
-        img: '/图片2.jfif',
-        alt: '图片2',
-        name: '方向2',
-        introduction: '要想清楚，方向2，到底是一种怎么样的存在。 一般来讲，我们都必须务必慎重的考虑考虑。 所谓火法，关键是火法需要如何写。 而这些并不是完全重要，更加重要的问题是， 拉罗什福科在不经意间这样说过，我们唯一不会改正的缺点是软弱。带着这句话，我们还要更加慎重的审视这个问题： 而这些并不是完全重要，更加重要的问题是， 冯学峰曾经说过，当一个人用工作去迎接光明，光明很快就会来照耀着他。带着这句话，我们还要更加慎重的审视这个问题： 既然如何， 每个人都不得不面对这些问题。 在面对这种问题时， 我们都知道，只要有意义，那么就必须慎重考虑。 达·芬奇曾经说过，大胆和坚定的决心能够抵得上武器的精良。这启发了我， 而这些并不是完全重要，更加重要的问题是， 带着这些问题，我们来审视一下火法。 总结的来说， 经过上述讨论火法的发生，到底需要如何做到，不火法的发生，又会如何产生。 马尔顿在不经意间这样说过，坚强的信心，能使平凡的人做出惊人的事业。这句话语虽然很短，但令我浮想联翩。 在这种困难的抉择下，本人思来想去，寝食难安。 经过上述讨论而这些并不是完全重要，更加重要的问题是， 而这些并不是完全重要，更加重要的问题是， 火法，发生了会如何，不发生又会如何。 在这种困难的抉择下，本人思来想去，寝食难安。 火法的发生，到底需要如何做到，不火法的发生，又会如何产生。 卢梭在不经意间这样说过，浪费时间是一桩大罪过。带着这句话，我们还要更加慎重的审视这个问题： 维龙曾经说过，要成功不需要什么特别的才能，只要把你能做的小事做得好就行了。我希望诸位也能好好地体会这句话。 总结的来说， 克劳斯·莫瑟爵士曾经说过，教育需要花费钱，而无知也是一样。这不禁令我深思。 总结的来说， 一般来说， 火法因何而发生?既然如何， 我们一般认为，抓住了问题的关键，其他一切则会迎刃而解。 罗素·贝克在不经意间这样说过，一个人即使已登上顶峰，也仍要自强不息。这启发了我， 火法的发生，到底需要如何做到，不火法的发生，又会如何产生。 我认为， 火法，到底应该如何实现。 本人也是经过了深思熟虑，在每个日日夜夜思考这个问题。 要想清楚，火法，到底是一种怎么样的存在。 那么， 了解清楚火法到底是一种怎么样的存在，是解决一切问题的关键。 我们一般认为，抓住了问题的关键，其他一切则会迎刃而解。 生活中，若火法出现了，我们就不得不考虑它出现了的事实。 笛卡儿曾经说过，读一切好书，就是和许多高尚的人谈话。这启发了我， 要想清楚，火法，到底是一种怎么样的存在。 我们一般认为，抓住了问题的关键，其他一切则会迎刃而解。 卡耐基在不经意间这样说过，一个不注意小事情的人，永远不会成就大事业。带着这句话，我们还要更加慎重的审视这个问题： 我们不得不面对一个非常尴尬的事实，那就是， 既然如何， 卡莱尔在不经意间这样说过，过去一切时代的精华尽在书中。我希望诸位也能好好地体会这句话。 所谓火法，关键是火法需要如何写。 生活中，若火法出现了，我们就不得不考虑它出现了的事实。 生活中，若火法出现了，我们就不得不考虑它出现了的事实。 我们一般认为，抓住了问题的关键，其他一切则会迎刃而解。 既然如何， 带着这些问题，我们来审视一下火法。 现在，解决火法的问题，是非常非常重要的。 所以， 一般来说， 本人也是经过了深思熟虑，在每个日日夜夜思考这个问题。'
-    }
-]
-const data = directions.map((d) => {
-    return d.name
-})
-const props = {
-    name: 'file',
-    action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
-    headers: {
-        authorization: 'authorization-text',
-    },
-    onChange(info) {
-        if (info.file.status !== 'uploading') {
-            console.log(info.file, info.fileList);
-        }
-        if (info.file.status === 'done') {
-            message.success(`${info.file.name} file uploaded successfully`);
-        } else if (info.file.status === 'error') {
-            message.error(`${info.file.name} file upload failed.`);
-        }
-    },
-};
+let isUnmount = false
 
 class Directions extends Component {
     constructor(props) {
         super(props);
         this.state = {
             visible: false,
-            i: '',
-            operate: '修改'
+            operateI: null,
+            operate: '',
+            controller: new AbortController(),
+            loading: true,
+            directions: [],
+            fileList: [],
+            uploadToken: '',
+            fileName: '',
+            newItem: {}
         }
-        this.formRef = React.createRef()
     }
 
     moveUp = (item) => {
-        return (() => {
-            if (item === data[0]) {
-                message.info('已经是第一个了').then(r => {
-                })
+        return (async () => {
+            if (this.state.directions[0].name === item) {
+                message.info('已经是第一个了')
             } else {
-                const i = data.indexOf(item)
-                data[i] = data[i - 1]
-                data[i - 1] = item
-                //fetch
+                let id
+                for (let i = 0; i < this.state.directions.length; i++) {
+                    if (this.state.directions[i].name === item) {
+                        id = this.state.directions[i].id
+                    }
+                }
+                try {
+                    await directionUp(id, this.state.controller.signal, 1).then(
+                        async result => {
+                            if (result.code === 0) {
+                                message.success('上移成功')
+                                await getDirection(this.state.controller.signal, 1).then(
+                                    result => {
+                                        if (result.code === 0) {
+                                            if (!isUnmount) {
+                                                this.setState({
+                                                    directions: result.data.directions
+                                                })
+                                            }
+                                        } else {
+                                            console.log(result.message)
+                                        }
+                                    }
+                                )
+                            } else {
+                                message.error(`上移失败，错误为${result.message}`)
+                            }
+                        }
+                    )
+                } catch (e) {
+                    console.log('e:', e)
+                }
             }
         })
     }
 
     moveDown = (item) => {
-        return (() => {
-            if (item === data[data.length - 1]) {
-                message.info('已经是最后一个了').then(r => {
-                })
+        return (async () => {
+            if (this.state.directions[this.state.directions.length - 1].name === item) {
+                message.info('已经是最后一个了')
             } else {
-                const i = data.indexOf(item)
-                data[i] = data[i + 1]
-                data[i + 1] = item
-                //fetch
+                let id
+                for (let i = 0; i < this.state.directions.length; i++) {
+                    if (this.state.directions[i].name === item) {
+                        id = this.state.directions[i].id
+                    }
+                }
+                try {
+                    await directionDown(id, this.state.controller.signal, 1).then(
+                        async result => {
+                            if (result.code === 0) {
+                                message.success('下移成功')
+                                await getDirection(this.state.controller.signal, 1).then(
+                                    result => {
+                                        if (result.code === 0) {
+                                            if (!isUnmount) {
+                                                this.setState({
+                                                    directions: result.data.directions
+                                                })
+                                            }
+                                        } else {
+                                            console.log(result.message)
+                                        }
+                                    }
+                                )
+                            } else {
+                                message.error(`下移失败，错误为${result.message}`)
+                            }
+                        }
+                    )
+                } catch (e) {
+                    console.log('e:', e)
+                }
             }
         })
     }
 
     modifyItem = (item) => {
-        return (() => {
-            this.setState({
-                i: data.indexOf(item),
-                visible: true,
-                operate: '修改'
-            }, () => {
-                if (this.formRef.current !== null) {
-                    this.formRef.current.resetFields(['name', directions[this.state.i].name])
-                    this.formRef.current.resetFields(['introduction', directions[this.state.i].introduction])
+        return (async () => {
+            let operateI
+            for (let i = 0; i < this.state.directions.length; i++) {
+                if (this.state.directions[i].name === item) {
+                    operateI = i
                 }
-            })
-        })
-    }
-
-    deleteItem = (item) => {
-        return (() => {
-            data.splice(data.indexOf(item), 1)
-            console.log(data)
-        })
-    }
-
-    onClose = () => {
-        this.setState({
-            i: '',
-            visible: false
-        })
-    }
-
-    handleOk = (value) => {
-        this.setState({
-            i: '',
-            visible: false
-        })
-        console.log(value)
-        //fetch
-    }
-
-    addItem = () => {
-        this.setState({
-            operate: '新增',
-            visible: true
-        }, () => {
-            if (this.formRef.current !== null) {
-                this.formRef.current.resetFields(['name', ''])
-                this.formRef.current.resetFields(['introduction', ''])
+            }
+            if (!isUnmount) {
+                await this.setState({
+                    operateI: operateI,
+                    visible: true,
+                    operate: '修改'
+                })
+            }
+            try {
+                await getImageUrl(this.state.directions[operateI].cover, this.state.controller.signal, 1).then(
+                    result => {
+                        if (result.code === 0) {
+                            let temp = [...this.state.directions]
+                            temp[operateI]['img'] = result.data.privateDownloadUrl
+                            temp[operateI]['alt'] = `directionImg${operateI}`
+                            if (!isUnmount) {
+                                this.setState({
+                                    directions: temp
+                                })
+                            }
+                        } else {
+                            console.log(result.message)
+                        }
+                    }
+                )
+            } catch (e) {
+                console.log('e:', e)
             }
         })
     }
 
-    render() {
-        const {visible, i, operate} = this.state
-        return (
-            <>
-                <Title level={3}>研究方向</Title>
-                <List
-                    style={{background: 'white', marginTop: '20px'}}
-                    size="large"
-                    bordered
-                    dataSource={data}
-                    renderItem={item => <List.Item
-                        actions={[<Button onClick={this.moveUp(item)} type={'link'} icon={<UpCircleOutlined/>}/>,
-                            <Button onClick={this.moveDown(item)} type={'link'} icon={<DownCircleOutlined/>}/>,
-                            <Link onClick={this.modifyItem(item)}>修改</Link>,
-                            <Link onClick={this.deleteItem(item)}>删除</Link>]}>{item}</List.Item>}
-                />
-                <Button style={{marginTop: '20px'}} onClick={this.addItem}>
-                    新增
-                </Button>
-                <Drawer
-                    title={operate}
-                    width={720}
-                    onClose={this.onClose}
-                    visible={visible}
-                    bodyStyle={{paddingBottom: 80}}
-                >
-                    {i === '' ?
-                        <Form ref={this.formRef} onFinish={this.handleOk}>
-                            <Form.Item rules={[{required: true, message: '请上传'}]}>
-                                <Upload {...props}>
-                                    <Button icon={<UploadOutlined/>}
-                                            style={{display: 'inline'}}>上传</Button>
-                                </Upload>
-                            </Form.Item>
-                            <Form.Item label={'方向名称'} name={'name'} rules={[{required: true, message: '请输入'}]}>
-                                <Input/>
-                            </Form.Item>
-                            <Form.Item label={'方向简介'} name={'introduction'} rules={[{required: true, message: '请输入'}]}>
-                                <Input.TextArea autoSize={true}/>
-                            </Form.Item>
-                            <Form.Item>
-                                <Button style={{float: 'right', marginRight: '50px'}} type="primary" htmlType="submit">
-                                    {operate}
-                                </Button>
-                            </Form.Item>
-                        </Form> :
-                        <Form ref={this.formRef} onFinish={this.handleOk}
-                              initialValues={{name: directions[i].name, introduction: directions[i].introduction}}>
-                            <Form.Item rules={[{required: true, message: '请上传'}]}>
-                                <img className={index.img} src={directions[i].img} alt={directions[i].name}/>
-                                <Upload {...props}>
-                                    <Button icon={<UploadOutlined/>}
-                                            style={{display: 'inline', marginLeft: '30px'}}>替换</Button>
-                                </Upload>
-                            </Form.Item>
-                            <Form.Item label={'方向名称'} name={'name'} rules={[{required: true, message: '请输入'}]}>
-                                <Input/>
-                            </Form.Item>
-                            <Form.Item label={'方向简介'} name={'introduction'} rules={[{required: true, message: '请输入'}]}>
-                                <Input.TextArea autoSize={true}/>
-                            </Form.Item>
-                            <Form.Item>
-                                <Button style={{float: 'right', marginRight: '50px'}} type="primary" htmlType="submit">
-                                    {operate}
-                                </Button>
-                            </Form.Item>
-                        </Form>
+    deleteItem = async (item) => {
+        let id
+        for (let i = 0; i < this.state.directions.length; i++) {
+            if (this.state.directions[i].name === item) {
+                id = this.state.directions[i].id
+            }
+        }
+        try {
+            await deleteDirection(id, this.state.controller.signal, 1).then(
+                async result => {
+                    if (result.code === 0) {
+                        message.success('删除成功')
+                        await getDirection(this.state.controller.signal, 1).then(
+                            result => {
+                                if (result.code === 0) {
+                                    if (!isUnmount) {
+                                        this.setState({
+                                            directions: result.data.directions
+                                        })
+                                    }
+                                } else {
+                                    console.log(result.message)
+                                }
+                            }
+                        )
+                    } else {
+                        message.error(`删除失败，错误为${result.message}`)
                     }
-                </Drawer>
-            </>
-        )
+                }
+            )
+        } catch (e) {
+            console.log('e:', e)
+        }
+    }
+
+    changeName = (operateI) => {
+        return (event => {
+            if (operateI !== -1) {
+                let temp = this.state.directions
+                temp[operateI].name = event.target.value
+                if (!isUnmount) {
+                    this.setState({
+                        directions: temp
+                    })
+                }
+            } else {
+                let temp = this.state.newItem
+                temp.name = event.target.value
+                if (!isUnmount) {
+                    this.setState({
+                        newItem: temp
+                    })
+                }
+            }
+        })
+    }
+
+    changeIntroduction = (operateI, i) => {
+        return (event => {
+            if (this.state.operateI !== -1) {
+                let temp = [...this.state.directions]
+                temp[operateI].introduction[i] = event.target.value
+                if (!isUnmount) {
+                    this.setState({
+                        directions: temp
+                    })
+                }
+            } else {
+                let temp = {...this.state.newItem}
+                temp.introduction[i] = event.target.value
+                if (!isUnmount) {
+                    this.setState({
+                        newItem: temp
+                    })
+                }
+            }
+        })
+    }
+
+    changeUpload = async (info) => {
+        if (info.file.status === 'done') {
+            message.destroy('loading')
+            message.success(`${info.file.name}上传成功`)
+            if (this.state.operateI !== -1) {
+                let temp = [...this.state.directions]
+                try {
+                    temp[this.state.operateI].cover = this.state.fileName
+                    await getImageUrl(this.state.directions[this.state.operateI].cover, this.state.controller.signal, 1).then(
+                        result => {
+                            if (result.code === 0) {
+                                temp[this.state.operateI]['img'] = result.data.privateDownloadUrl
+                                if (!isUnmount) {
+                                    this.setState({
+                                        directions: temp
+                                    })
+                                }
+                            } else {
+                                console.log(result.message)
+                            }
+                        }
+                    )
+                } catch (e) {
+                    console.log('e:', e)
+                }
+            } else {
+                let temp = {...this.state.newItem}
+                try {
+                    temp.cover = this.state.fileName
+                    await getImageUrl(temp.cover, this.state.controller.signal, 1).then(
+                        result => {
+                            if (result.code === 0) {
+                                temp['img'] = result.data.privateDownloadUrl
+                                temp['alt'] = 'newImg'
+                                if (!isUnmount) {
+                                    this.setState({
+                                        newItem: temp
+                                    })
+                                }
+                            } else {
+                                console.log(result.message)
+                            }
+                        }
+                    )
+                } catch (e) {
+                    console.log('e:', e)
+                }
+            }
+        } else if (info.file.status === 'error') {
+            message.destroy('loading')
+            message.error(`${info.file.name}上传失败`);
+        }
+    }
+
+    setFile = async (file) => {
+        message.loading({
+            content: `${file.name}上传中……`,
+            key: 'loading',
+            duration: 0
+        })
+        const fileName = uuidv4()
+        if (!isUnmount) {
+            await this.setState({
+                fileList: [file],
+                fileName: fileName
+            })
+        }
+        try {
+            await getImageToken(this.state.fileName, this.state.controller.signal, 1).then(
+                result => {
+                    if (result.code === 0) {
+                        if (!isUnmount) {
+                            this.setState({
+                                uploadToken: result.data.uploadToken
+                            })
+                        }
+                    } else {
+                        console.log(result.message)
+                    }
+                }
+            )
+        } catch (e) {
+            console.log('e:', e)
+        }
+    }
+
+    addIntroductionItem = (i) => {
+        return (() => {
+            if (this.state.operateI !== -1) {
+                let temp = [...this.state.directions]
+                temp[this.state.operateI].introduction.splice(i + 1, 0, '')
+                if (!isUnmount) {
+                    this.setState({
+                        directions: temp
+                    })
+                }
+            } else {
+                let temp = {...this.state.newItem}
+                temp.introduction.splice(i + 1, 0, '')
+                if (!isUnmount) {
+                    this.setState({
+                        newItem: temp
+                    })
+                }
+            }
+        })
+    }
+
+    deleteIntroductionItem = (i) => {
+        return (() => {
+            if (this.state.operateI !== -1) {
+                let temp = [...this.state.directions]
+                temp[this.state.operateI].introduction.splice(i, 1)
+                if (!isUnmount) {
+                    this.setState({
+                        directions: temp
+                    })
+                }
+            } else {
+                let temp = {...this.state.newItem}
+                temp.introduction.splice(i, 1)
+                if (!isUnmount) {
+                    this.setState({
+                        newItem: temp
+                    })
+                }
+            }
+        })
+    }
+
+    onClose = async () => {
+        if (!isUnmount) {
+            this.setState({
+                visible: false
+            })
+        }
+        try {
+            await getDirection(this.state.controller.signal, 1).then(
+                result => {
+                    if (result.code === 0) {
+                        if (!isUnmount) {
+                            this.setState({
+                                directions: result.data.directions
+                            })
+                        }
+                    } else {
+                        console.log(result.message)
+                    }
+                }
+            )
+        } catch (e) {
+            console.log('e:', e)
+        }
+    }
+
+    showConfirmModify = async () => {
+        const {directions} = this.state
+        let flag = true
+        for (let i = 0; i < directions.length; i++) {
+            if (directions[i].cover === '' || directions[i].name === '' || directions[i].introduction.length === 0) {
+                flag = false
+            }
+        }
+        if (flag === false) {
+            message.warning('请将信息填写完整')
+        } else {
+            const that = this
+            let oldName
+            await getDirection(this.state.controller.signal, 1).then(
+                result => {
+                    if (result.code === 0) {
+                        oldName = result.data.directions[this.state.operateI].name
+                    } else {
+                        console.log(result.message)
+                    }
+                }
+            )
+            await checkDirection(directions[this.state.operateI].name, oldName, this.state.controller.signal, 1).then(
+                result => {
+                    if (result.code === 0) {
+                        confirm({
+                            title: '确认修改吗',
+                            icon: <ExclamationCircleOutlined/>,
+                            okText: '确定',
+                            cancelText: '取消',
+                            onOk() {
+                                that.handleOk()
+                            },
+                            onCancel() {
+                            },
+                        });
+                    } else {
+                        message.warning('方向名已存在，请更换')
+                    }
+                }
+            )
+        }
+    }
+
+    showConfirmAdd = async () => {
+        const {newItem} = this.state
+        if (newItem.cover === '' || newItem.name === '' || newItem.introduction.length === 0) {
+            message.warning('请将信息填写完整')
+        } else {
+            const that = this
+            await checkDirection(newItem.name, '', this.state.controller.signal, 1).then(
+                result => {
+                    if (result.code === 0) {
+                        confirm({
+                            title: '确认添加吗',
+                            icon: <ExclamationCircleOutlined/>,
+                            okText: '确定',
+                            cancelText: '取消',
+                            onOk() {
+                                that.handleOk()
+                            },
+                            onCancel() {
+                            },
+                        });
+                    } else {
+                        message.warning('方向名已存在，请更换')
+                    }
+                }
+            )
+        }
+    }
+
+    showConfirmDelete = (item) => {
+        const that = this
+        return (() => {
+            confirm({
+                title: '确认删除吗',
+                icon: <ExclamationCircleOutlined/>,
+                okText: '确定',
+                cancelText: '取消',
+                onOk() {
+                    that.deleteItem(item)
+                },
+                onCancel() {
+                },
+            });
+        })
+    }
+
+    handleOk = async () => {
+        if (!isUnmount) {
+            this.setState({
+                visible: false
+            })
+        }
+        try {
+            if (this.state.operateI !== -1) {
+                await modifyDirection(this.state.directions[this.state.operateI], this.state.controller.signal, 1).then(
+                    result => {
+                        if (result.code === 0) {
+                            message.success('修改成功')
+                        } else {
+                            message.error(`修改失败，错误为${result.message}`)
+                        }
+                    }
+                )
+            } else {
+                await addDirection(this.state.newItem, this.state.controller.signal, 1).then(
+                    result => {
+                        if (result.code === 0) {
+                            message.success('添加成功')
+                        } else {
+                            message.error(`添加失败，错误为${result.message}`)
+                        }
+                    }
+                )
+            }
+            await getDirection(this.state.controller.signal, 1).then(
+                result => {
+                    if (result.code === 0) {
+                        if (!isUnmount) {
+                            this.setState({
+                                directions: result.data.directions
+                            })
+                        }
+                    } else {
+                        console.log(result.message)
+                    }
+                }
+            )
+        } catch (e) {
+            console.log('e:', e)
+        }
+    }
+
+    addItem = () => {
+        if (!isUnmount) {
+            this.setState({
+                newItem: {
+                    cover: '',
+                    name: '',
+                    introduction: []
+                },
+                operateI: -1,
+                operate: '新增',
+                visible: true
+            })
+        }
+    }
+
+    async componentDidMount() {
+        isUnmount = false
+        try {
+            await getDirection(this.state.controller.signal, 1).then(
+                result => {
+                    if (result.code === 0) {
+                        if (!isUnmount) {
+                            this.setState({
+                                directions: result.data.directions
+                            })
+                        }
+                    } else {
+                        console.log(result.message)
+                    }
+                }
+            )
+        } catch (e) {
+            console.log('e:', e)
+        }
+
+        if (!isUnmount) {
+            await this.setState({
+                loading: false
+            })
+        }
+    }
+
+    componentWillUnmount() {
+        this.state.controller.abort()
+        isUnmount = true
+    }
+
+    render() {
+        if (this.state.loading === true) {
+            return (
+                <div className={index.spin}>
+                    <Spin size={"large"}/>
+                </div>
+            )
+        } else {
+            const {visible, operateI, operate, directions, newItem} = this.state
+            const data = {
+                token: this.state.uploadToken,
+                key: this.state.fileName
+            }
+            return (
+                <>
+                    <Title level={3}>研究方向</Title>
+                    <List
+                        style={{background: 'white', marginTop: '20px'}}
+                        size="large"
+                        bordered
+                        dataSource={directions.map((d) => {
+                            return d.name
+                        })}
+                        renderItem={item => <List.Item
+                            actions={[<Button onClick={this.moveUp(item)} type={'link'} icon={<UpCircleOutlined/>}/>,
+                                <Button onClick={this.moveDown(item)} type={'link'} icon={<DownCircleOutlined/>}/>,
+                                <Link onClick={this.modifyItem(item)}>修改</Link>,
+                                <Link onClick={this.showConfirmDelete(item)}>删除</Link>
+                            ]}>{item}</List.Item>}
+                    />
+                    <Button style={{marginTop: '20px'}} onClick={this.addItem}>
+                        新增
+                    </Button>
+                    {operate === '' ? <></> : <Drawer
+                        title={operate}
+                        width={720}
+                        onClose={this.onClose}
+                        visible={visible}
+                        bodyStyle={{paddingBottom: 80}}
+                    >
+                        {operate === '新增' ?
+                            <div>
+                                <div className={index.div}>
+                                    <span className={index.star}>*</span>
+                                    <span>图片：</span>
+                                    {newItem.cover === "" ?
+                                        <ImgCrop aspect={220 / 140} quality={1}>
+                                            <Upload
+                                                beforeUpload={
+                                                    file => this.setFile(file)
+                                                }
+                                                showUploadList={false}
+                                                action={'http://up-z2.qiniup.com'}
+                                                data={data}
+                                                fileList={this.state.fileList}
+                                                onChange={this.changeUpload}>
+                                                <Button icon={<UploadOutlined/>}
+                                                        style={{display: 'inline'}}>上传图片</Button>
+                                            </Upload>
+                                        </ImgCrop>
+                                        :
+                                        <>
+                                            <img className={index.img} src={newItem.img}
+                                                 alt={newItem.alt}/>
+                                            <ImgCrop aspect={220 / 140} quality={1}>
+                                                <Upload
+                                                    beforeUpload={
+                                                        file => this.setFile(file)
+                                                    }
+                                                    showUploadList={false}
+                                                    action={'http://up-z2.qiniup.com'}
+                                                    data={data}
+                                                    fileList={this.state.fileList}
+                                                    onChange={this.changeUpload}>
+                                                    <Button icon={<UploadOutlined/>}
+                                                            style={{display: 'inline', marginLeft: '30px'}}>替换</Button>
+                                                </Upload>
+                                            </ImgCrop>
+                                        </>
+                                    }
+                                </div>
+                                <div className={index.div}>
+                                    <span className={index.star}>*</span>
+                                    <span>名称：</span>
+                                    <Input style={{width: '300px'}} value={this.state.newItem.name}
+                                           onChange={this.changeName(operateI)}/>
+                                </div>
+                                <div className={index.div}>
+                                    <span className={index.star}>*</span>
+                                    <span>介绍：</span>
+                                    <Button style={{marginRight: '32px'}} className={index.smallButton}
+                                            onClick={this.addIntroductionItem(-1)}
+                                            type={'link'}
+                                            icon={<PlusCircleOutlined/>}/>
+                                    {newItem.introduction.map((d, i) => {
+                                        return (
+                                            <div key={i} style={{minHeight: '80px'}}>
+                                                <Input.TextArea style={{marginTop: '10px'}} autoSize={true}
+                                                                value={d}
+                                                                onChange={this.changeIntroduction(operateI, i)}/>
+                                                <Button className={index.smallButton}
+                                                        onClick={this.deleteIntroductionItem(i)}
+                                                        type={'link'}
+                                                        icon={<MinusCircleOutlined/>}/>
+                                                <Button className={index.smallButton}
+                                                        onClick={this.addIntroductionItem(i)}
+                                                        type={'link'}
+                                                        icon={<PlusCircleOutlined/>}/>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                                <Button style={{float: "right", marginRight: '30px', marginTop: '20px'}} type="primary"
+                                        onClick={this.showConfirmAdd}>新增</Button>
+                            </div>
+                            :
+                            <div>
+                                <div className={index.div}>
+                                    <span className={index.star}>*</span>
+                                    <span>图片：</span>
+                                    <img className={index.img} src={directions[operateI].img}
+                                         alt={directions[operateI].alt}/>
+                                    <ImgCrop aspect={220 / 140} quality={1}>
+                                        <Upload
+                                            beforeUpload={
+                                                file => this.setFile(file)
+                                            }
+                                            showUploadList={false}
+                                            action={'http://up-z2.qiniup.com'}
+                                            data={data}
+                                            fileList={this.state.fileList}
+                                            onChange={this.changeUpload}>
+                                            <Button icon={<UploadOutlined/>}
+                                                    style={{display: 'inline', marginLeft: '30px'}}>替换</Button>
+                                        </Upload>
+                                    </ImgCrop>
+                                </div>
+                                <div className={index.div}>
+                                    <span className={index.star}>*</span>
+                                    <span>名称：</span>
+                                    <Input style={{width: '300px'}} value={directions[operateI].name}
+                                           onChange={this.changeName(operateI)}/>
+                                </div>
+                                <div className={index.div}>
+                                    <span className={index.star}>*</span>
+                                    <span>介绍：</span>
+                                    <Button style={{marginRight: '32px'}} className={index.smallButton}
+                                            onClick={this.addIntroductionItem(-1)}
+                                            type={'link'}
+                                            icon={<PlusCircleOutlined/>}/>
+                                    {directions[operateI].introduction.map((d, i) => {
+                                        return (
+                                            <div key={i} style={{minHeight: '80px'}}>
+                                                <Input.TextArea style={{marginTop: '10px'}} autoSize={true}
+                                                                value={d}
+                                                                onChange={this.changeIntroduction(operateI, i)}/>
+                                                <Button className={index.smallButton}
+                                                        onClick={this.deleteIntroductionItem(i)}
+                                                        type={'link'}
+                                                        icon={<MinusCircleOutlined/>}/>
+                                                <Button className={index.smallButton}
+                                                        onClick={this.addIntroductionItem(i)}
+                                                        type={'link'}
+                                                        icon={<PlusCircleOutlined/>}/>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                                <Button style={{float: "right", marginRight: '30px', marginTop: '20px'}} type="primary"
+                                        onClick={this.showConfirmModify}>修改</Button>
+                            </div>
+                        }
+                    </Drawer>}
+                </>
+            )
+        }
     }
 }
 

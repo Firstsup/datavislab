@@ -30,3 +30,14 @@
     margin-right: 50px;
     float: right;
 }
+
+.spin {
+    margin: 300px 0;
+    text-align: center;
+}
+
+.img {
+    display: table-cell;
+    max-width: 800px;
+    margin: 30px auto;
+}

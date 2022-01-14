@@ -1,173 +1,685 @@
 import React, {Component} from 'react';
 import Title from "antd/es/typography/Title";
-import {Button, Drawer, Form, Input, List, message, Typography} from "antd";
-import {DownCircleOutlined, UpCircleOutlined} from "@ant-design/icons";
+import {Button, Drawer, Input, List, message, Spin, Typography, Upload} from "antd";
+import {
+    DownCircleOutlined,
+    ExclamationCircleOutlined, UpCircleOutlined, UploadOutlined, FilePdfOutlined
+} from "@ant-design/icons";
+import paperUp from "../../../../api/Achievements/paperUp";
+import getPaper from "../../../../api/Achievements/getPaper";
+import paperDown from "../../../../api/Achievements/paperDown";
+import deletePaper from "../../../../api/Achievements/deletePaper";
+import confirm from "antd/es/modal/confirm";
+import checkPaper from "../../../../api/Achievements/checkPaper";
+import modifyPaper from "../../../../api/Achievements/modifyPaper";
+import addPaper from "../../../../api/Achievements/addPaper";
+import index from "../../Directions/index.module.css";
+import getFileUrl from "../../../../api/Qiniu/getFileUrl";
+import {v4 as uuidv4} from "uuid";
+import getFileToken from "../../../../api/Qiniu/getFileToken";
+import findNth from "../../../../utils/findNth";
 
 const {Link} = Typography;
 
-const paper = [
-    {
-        title: '就我个人来说，奖对我的意义，不能不说非常重大。 问题的关键究竟为何? 卡耐基在不经意间这样说过，一个不注意小事情的人，永远不会成就大事业。这启发了我， 在这种困难的抉择下，本人思来想去，寝食难安。 经过上述讨论总结的来说， 奖，到底应该如何实现。 了解清楚奖到底是一种怎么样的存在，是解决一切问题的关键。 既然如此， 一般来说， 我们一般认为，抓住了问题的关键，其他一切则会迎刃而解。 经过上述讨论这种事实对本人来说意义重大，相信对这个世界也是有一定意义的。 经过上述讨论那么， 既然如此。',
-        venue: '我是venue'
-    },
-    {
-        title: '123123',
-        venue: '我是第二个venue'
-    }
-]
-const data = paper.map((d) => {
-    return d.title
-})
+let isUnmount = false
 
 class Paper extends Component {
     constructor(props) {
         super(props);
         this.state = {
             visible: false,
-            i: '',
-            operate: '修改'
+            operateI: null,
+            operate: '',
+            controller: new AbortController(),
+            loading: true,
+            papers: [],
+            fileList: [],
+            uploadToken: '',
+            fileName: '',
+            newItem: {}
         }
-        this.formRef = React.createRef()
     }
 
     moveUp = (item) => {
-        return (() => {
-            if (item === data[0]) {
-                message.info('已经是第一个了').then(r => {
-                })
+        return (async () => {
+            if (this.state.papers[0].title === item) {
+                message.info('已经是第一个了')
             } else {
-                const i = data.indexOf(item)
-                data[i] = data[i - 1]
-                data[i - 1] = item
-                //fetch
+                let id
+                for (let i = 0; i < this.state.papers.length; i++) {
+                    if (this.state.papers[i].title === item) {
+                        id = this.state.papers[i].id
+                    }
+                }
+                try {
+                    await paperUp(id, this.state.controller.signal, 2).then(
+                        async result => {
+                            if (result.code === 0) {
+                                message.success('上移成功')
+                                await getPaper(this.state.controller.signal, 2).then(
+                                    result => {
+                                        if (result.code === 0) {
+                                            if (!isUnmount) {
+                                                this.setState({
+                                                    papers: result.data.papers
+                                                })
+                                            }
+                                        } else {
+                                            console.log(result.message)
+                                        }
+                                    }
+                                )
+                            } else {
+                                message.error(`上移失败，错误为${result.message}`)
+                            }
+                        }
+                    )
+                } catch (e) {
+                    console.log('e:', e)
+                }
             }
         })
     }
 
     moveDown = (item) => {
-        return (() => {
-            if (item === data[data.length - 1]) {
-                message.info('已经是最后一个了').then(r => {
-                })
+        return (async () => {
+            if (this.state.papers[this.state.papers.length - 1].title === item) {
+                message.info('已经是最后一个了')
             } else {
-                const i = data.indexOf(item)
-                data[i] = data[i + 1]
-                data[i + 1] = item
-                //fetch
+                let id
+                for (let i = 0; i < this.state.papers.length; i++) {
+                    if (this.state.papers[i].title === item) {
+                        id = this.state.papers[i].id
+                    }
+                }
+                try {
+                    await paperDown(id, this.state.controller.signal, 2).then(
+                        async result => {
+                            if (result.code === 0) {
+                                message.success('下移成功')
+                                await getPaper(this.state.controller.signal, 2).then(
+                                    result => {
+                                        if (result.code === 0) {
+                                            if (!isUnmount) {
+                                                this.setState({
+                                                    papers: result.data.papers
+                                                })
+                                            }
+                                        } else {
+                                            console.log(result.message)
+                                        }
+                                    }
+                                )
+                            } else {
+                                message.error(`下移失败，错误为${result.message}`)
+                            }
+                        }
+                    )
+                } catch (e) {
+                    console.log('e:', e)
+                }
             }
         })
     }
 
     modifyItem = (item) => {
-        return (() => {
-            this.setState({
-                i: data.indexOf(item),
-                visible: true,
-                operate: '修改'
-            }, () => {
-                if (this.formRef.current !== null) {
-                    this.formRef.current.resetFields(['title', paper[this.state.i].title])
-                    this.formRef.current.resetFields(['venue', paper[this.state.i].title])
+        return (async () => {
+            let operateI
+            for (let i = 0; i < this.state.papers.length; i++) {
+                if (this.state.papers[i].title === item) {
+                    operateI = i
                 }
-            })
-        })
-    }
-
-    deleteItem = (item) => {
-        return (() => {
-            data.splice(data.indexOf(item), 1)
-            console.log(data)
-        })
-    }
-
-    onClose = () => {
-        this.setState({
-            i: '',
-            visible: false
-        })
-    }
-
-    handleOk = (value) => {
-        this.setState({
-            i: '',
-            visible: false
-        })
-        console.log(value)
-    }
-
-    addItem = () => {
-        this.setState({
-            operate: '新增',
-            visible: true
-        }, () => {
-            if (this.formRef.current !== null) {
-                this.formRef.current.resetFields(['title', ''])
-                this.formRef.current.resetFields(['venue', ''])
+            }
+            if (!isUnmount) {
+                await this.setState({
+                    operateI: operateI,
+                    visible: true,
+                    operate: '修改'
+                })
+            }
+            try {
+                await getFileUrl(this.state.papers[operateI].file, this.state.controller.signal, 2).then(
+                    result => {
+                        if (result.code === 0) {
+                            let temp = [...this.state.papers]
+                            temp[operateI]['fileUrl'] = result.data.privateDownloadUrl
+                            temp[operateI]['alt'] = `directionImg${operateI}`
+                            if (!isUnmount) {
+                                this.setState({
+                                    papers: temp
+                                })
+                            }
+                        } else {
+                            console.log(result.message)
+                        }
+                    }
+                )
+            } catch (e) {
+                console.log('e:', e)
             }
         })
     }
 
-    render() {
-        const {visible, i, operate} = this.state
-        return (
-            <>
-                <Title level={3}>论文</Title>
-                <List
-                    style={{background: 'white', marginTop: '20px'}}
-                    size="large"
-                    bordered
-                    dataSource={data}
-                    renderItem={item => <List.Item
-                        actions={[<Button onClick={this.moveUp(item)} type={'link'} icon={<UpCircleOutlined/>}/>,
-                            <Button onClick={this.moveDown(item)} type={'link'} icon={<DownCircleOutlined/>}/>,
-                            <Link onClick={this.modifyItem(item)}>修改</Link>,
-                            <Link onClick={this.deleteItem(item)}>删除</Link>]}>{item}</List.Item>}
-                />
-                <Button style={{marginTop: '20px'}} onClick={this.addItem}>
-                    新增
-                </Button>
-                <Drawer
-                    title={operate}
-                    width={720}
-                    onClose={this.onClose}
-                    visible={visible}
-                    bodyStyle={{paddingBottom: 80}}
-                >
-                    {i === '' ?
-                        <Form ref={this.formRef} onFinish={this.handleOk}>
-                            <Form.Item label={'题目'} name={'title'} rules={[{required: true, message: '请输入'}]}>
-                                <Input/>
-                            </Form.Item>
-                            <Form.Item label={'期刊会议'} name={'venue'} rules={[{required: true, message: '请输入'}]}>
-                                <Input/>
-                            </Form.Item>
-                            <Form.Item>
-                                <Button style={{float: 'right', marginRight: '50px'}} type="primary" htmlType="submit">
-                                    {operate}
-                                </Button>
-                            </Form.Item>
-                        </Form> :
-                        <Form ref={this.formRef} onFinish={this.handleOk}
-                              initialValues={{
-                                  title: paper[i].title,
-                                  venue: paper[i].venue,
-                              }}>
-                            <Form.Item label={'题目'} name={'title'} rules={[{required: true, message: '请输入'}]}>
-                                <Input/>
-                            </Form.Item>
-                            <Form.Item label={'期刊会议'} name={'venue'} rules={[{required: true, message: '请输入'}]}>
-                                <Input/>
-                            </Form.Item>
-                            <Form.Item>
-                                <Button style={{float: 'right', marginRight: '50px'}} type="primary" htmlType="submit">
-                                    {operate}
-                                </Button>
-                            </Form.Item>
-                        </Form>
+    deleteItem = async (item) => {
+        let id
+        for (let i = 0; i < this.state.papers.length; i++) {
+            if (this.state.papers[i].title === item) {
+                id = this.state.papers[i].id
+            }
+        }
+        try {
+            await deletePaper(id, this.state.controller.signal, 2).then(
+                async result => {
+                    if (result.code === 0) {
+                        message.success('删除成功')
+                        await getPaper(this.state.controller.signal, 2).then(
+                            result => {
+                                if (result.code === 0) {
+                                    if (!isUnmount) {
+                                        this.setState({
+                                            papers: result.data.papers
+                                        })
+                                    }
+                                } else {
+                                    console.log(result.message)
+                                }
+                            }
+                        )
+                    } else {
+                        message.error(`删除失败，错误为${result.message}`)
                     }
-                </Drawer>
-            </>
-        )
+                }
+            )
+        } catch (e) {
+            console.log('e:', e)
+        }
+    }
+
+    changeTitle = (operateI) => {
+        return (event => {
+            if (operateI !== -1) {
+                let temp = this.state.papers
+                temp[operateI].title = event.target.value
+                if (!isUnmount) {
+                    this.setState({
+                        papers: temp
+                    })
+                }
+            } else {
+                let temp = this.state.newItem
+                temp.title = event.target.value
+                if (!isUnmount) {
+                    this.setState({
+                        newItem: temp
+                    })
+                }
+            }
+        })
+    }
+
+    changeVenue = (operateI) => {
+        return (event => {
+            if (operateI !== -1) {
+                let temp = this.state.papers
+                temp[operateI].venue = event.target.value
+                if (!isUnmount) {
+                    this.setState({
+                        papers: temp
+                    })
+                }
+            } else {
+                let temp = this.state.newItem
+                temp.venue = event.target.value
+                if (!isUnmount) {
+                    this.setState({
+                        newItem: temp
+                    })
+                }
+            }
+        })
+    }
+
+    changeUpload = async (info) => {
+        if (info.file.status === 'done') {
+            message.destroy('loading')
+            message.success(`${info.file.name}上传成功`)
+            if (this.state.operateI !== -1) {
+                let temp = [...this.state.papers]
+                try {
+                    temp[this.state.operateI].file = this.state.fileName
+                    temp[this.state.operateI].fileOriName = info.file.name
+                    await getFileUrl(this.state.papers[this.state.operateI].file, this.state.controller.signal, 2).then(
+                        result => {
+                            if (result.code === 0) {
+                                temp[this.state.operateI]['fileUrl'] = result.data.privateDownloadUrl
+                                if (!isUnmount) {
+                                    this.setState({
+                                        papers: temp
+                                    })
+                                }
+                            } else {
+                                console.log(result.message)
+                            }
+                        }
+                    )
+                } catch (e) {
+                    console.log('e:', e)
+                }
+            } else {
+                let temp = {...this.state.newItem}
+                try {
+                    temp.file = this.state.fileName
+                    temp.fileOriName = info.file.name
+                    await getFileUrl(temp.file, this.state.controller.signal, 2).then(
+                        result => {
+                            if (result.code === 0) {
+                                temp['fileUrl'] = result.data.privateDownloadUrl
+                                if (!isUnmount) {
+                                    this.setState({
+                                        newItem: temp
+                                    })
+                                }
+                            } else {
+                                console.log(result.message)
+                            }
+                        }
+                    )
+                } catch (e) {
+                    console.log('e:', e)
+                }
+            }
+        } else if (info.file.status === 'error') {
+            message.destroy('loading')
+            message.error(`${info.file.name}上传失败`);
+        }
+    }
+
+    setFile = async (file) => {
+        message.loading({
+            content: `${file.name}上传中……`,
+            key: 'loading',
+            duration: 0
+        })
+        const fileName = `${uuidv4()}.${file.name.substring(findNth(file.name, '.', 0) + 1)}`
+        if (!isUnmount) {
+            await this.setState({
+                fileList: [file],
+                fileName: fileName
+            })
+        }
+        try {
+            await getFileToken(this.state.fileName, this.state.controller.signal, 2).then(
+                result => {
+                    if (result.code === 0) {
+                        if (!isUnmount) {
+                            this.setState({
+                                uploadToken: result.data.uploadToken
+                            })
+                        }
+                    } else {
+                        console.log(result.message)
+                    }
+                }
+            )
+        } catch (e) {
+            console.log('e:', e)
+        }
+    }
+
+    openFile = () => {
+        if (this.state.operateI === -1) {
+            window.open(this.state.newItem.fileUrl, '_parent')
+        } else {
+            window.open(this.state.papers[this.state.operateI].fileUrl, '_parent')
+        }
+    }
+
+    onClose = async () => {
+        if (!isUnmount) {
+            this.setState({
+                visible: false
+            })
+        }
+        try {
+            await getPaper(this.state.controller.signal, 2).then(
+                result => {
+                    if (result.code === 0) {
+                        if (!isUnmount) {
+                            this.setState({
+                                papers: result.data.papers
+                            })
+                        }
+                    } else {
+                        console.log(result.message)
+                    }
+                }
+            )
+        } catch (e) {
+            console.log('e:', e)
+        }
+    }
+
+    showConfirmModify = async () => {
+        const {papers} = this.state
+        let flag = true
+        for (let i = 0; i < papers.length; i++) {
+            if (papers[i].title === '' || papers[i].venue === '' || papers[i].file === '') {
+                flag = false
+            }
+        }
+        if (flag === false) {
+            message.warning('请将信息填写完整')
+        } else {
+            const that = this
+            let oldTitle
+            await getPaper(this.state.controller.signal, 2).then(
+                result => {
+                    if (result.code === 0) {
+                        oldTitle = result.data.papers[this.state.operateI].title
+                    } else {
+                        console.log(result.message)
+                    }
+                }
+            )
+            await checkPaper(papers[this.state.operateI].title, oldTitle, this.state.controller.signal, 2).then(
+                result => {
+                    if (result.code === 0) {
+                        confirm({
+                            title: '确认修改吗',
+                            icon: <ExclamationCircleOutlined/>,
+                            okText: '确定',
+                            cancelText: '取消',
+                            onOk() {
+                                that.handleOk()
+                            },
+                            onCancel() {
+                            },
+                        });
+                    } else {
+                        message.warning('方向名已存在，请更换')
+                    }
+                }
+            )
+        }
+    }
+
+    showConfirmAdd = async () => {
+        const {newItem} = this.state
+        if (newItem.title === '' || newItem.venue === '' || newItem.file === '') {
+            message.warning('请将信息填写完整')
+        } else {
+            const that = this
+            await checkPaper(newItem.title, '', this.state.controller.signal, 2).then(
+                result => {
+                    if (result.code === 0) {
+                        confirm({
+                            title: '确认添加吗',
+                            icon: <ExclamationCircleOutlined/>,
+                            okText: '确定',
+                            cancelText: '取消',
+                            onOk() {
+                                that.handleOk()
+                            },
+                            onCancel() {
+                            },
+                        });
+                    } else {
+                        message.warning('论文名已存在，请更换')
+                    }
+                }
+            )
+        }
+    }
+
+    showConfirmDelete = (item) => {
+        const that = this
+        return (() => {
+            confirm({
+                title: '确认删除吗',
+                icon: <ExclamationCircleOutlined/>,
+                okText: '确定',
+                cancelText: '取消',
+                onOk() {
+                    that.deleteItem(item)
+                },
+                onCancel() {
+                },
+            });
+        })
+    }
+
+    handleOk = async () => {
+        if (!isUnmount) {
+            this.setState({
+                visible: false
+            })
+        }
+        try {
+            if (this.state.operateI !== -1) {
+                await modifyPaper(this.state.papers[this.state.operateI], this.state.controller.signal, 2).then(
+                    result => {
+                        if (result.code === 0) {
+                            message.success('修改成功')
+                        } else {
+                            message.error(`修改失败，错误为${result.message}`)
+                        }
+                    }
+                )
+            } else {
+                await addPaper(this.state.newItem, this.state.controller.signal, 2).then(
+                    result => {
+                        if (result.code === 0) {
+                            message.success('添加成功')
+                        } else {
+                            message.error(`添加失败，错误为${result.message}`)
+                        }
+                    }
+                )
+            }
+            await getPaper(this.state.controller.signal, 2).then(
+                result => {
+                    if (result.code === 0) {
+                        if (!isUnmount) {
+                            this.setState({
+                                papers: result.data.papers
+                            })
+                        }
+                    } else {
+                        console.log(result.message)
+                    }
+                }
+            )
+        } catch (e) {
+            console.log('e:', e)
+        }
+    }
+
+    addItem = () => {
+        if (!isUnmount) {
+            this.setState({
+                newItem: {
+                    title: '',
+                    venue: '',
+                    file: ''
+                },
+                operateI: -1,
+                operate: '新增',
+                visible: true
+            })
+        }
+    }
+
+    async componentDidMount() {
+        isUnmount = false
+        try {
+            await getPaper(this.state.controller.signal, 2).then(
+                result => {
+                    if (result.code === 0) {
+                        if (!isUnmount) {
+                            this.setState({
+                                papers: result.data.papers
+                            })
+                        }
+                    } else {
+                        console.log(result.message)
+                    }
+                }
+            )
+        } catch (e) {
+            console.log('e:', e)
+        }
+
+        if (!isUnmount) {
+            await this.setState({
+                loading: false
+            })
+        }
+    }
+
+    componentWillUnmount() {
+        this.state.controller.abort()
+        isUnmount = true
+    }
+
+    render() {
+        if (this.state.loading === true) {
+            return (
+                <div className={index.spin}>
+                    <Spin size={"large"}/>
+                </div>
+            )
+        } else {
+            const {visible, operateI, operate, papers, newItem} = this.state
+            const data = {
+                token: this.state.uploadToken,
+                key: this.state.fileName
+            }
+            return (
+                <>
+                    <Title level={3}>论文</Title>
+                    <List
+                        style={{background: 'white', marginTop: '20px'}}
+                        size="large"
+                        bordered
+                        dataSource={papers.map((d) => {
+                            return d.title
+                        })}
+                        renderItem={item => <List.Item
+                            actions={[<Button onClick={this.moveUp(item)} type={'link'} icon={<UpCircleOutlined/>}/>,
+                                <Button onClick={this.moveDown(item)} type={'link'} icon={<DownCircleOutlined/>}/>,
+                                <Link onClick={this.modifyItem(item)}>修改</Link>,
+                                <Link onClick={this.showConfirmDelete(item)}>删除</Link>
+                            ]}>{item}</List.Item>}
+                    />
+                    <Button style={{marginTop: '20px'}} onClick={this.addItem}>
+                        新增
+                    </Button>
+                    {operate === '' ? <></> : <Drawer
+                        title={operate}
+                        width={720}
+                        onClose={this.onClose}
+                        visible={visible}
+                        bodyStyle={{paddingBottom: 80}}
+                    >
+                        {operate === '新增' ?
+                            <div>
+                                <div className={index.div}>
+                                    <span className={index.star}>*</span>
+                                    <span>论文名：</span>
+                                    <Input style={{width: '300px'}} value={newItem.title}
+                                           onChange={this.changeTitle(operateI)}/>
+                                </div>
+                                <div className={index.div}>
+                                    <span className={index.star}>*</span>
+                                    <span>期刊会议：</span>
+                                    <Input style={{width: '300px'}} value={newItem.venue}
+                                           onChange={this.changeVenue(operateI)}/>
+                                </div>
+                                <div className={index.div}>
+                                    <span className={index.star}>*</span>
+                                    <span>文件：</span>
+                                    {newItem.file === "" ?
+                                        <>
+                                            <Upload
+                                                beforeUpload={
+                                                    file => this.setFile(file)
+                                                }
+                                                showUploadList={false}
+                                                action={'http://up-z2.qiniup.com'}
+                                                data={data}
+                                                fileList={this.state.fileList}
+                                                onChange={this.changeUpload}>
+                                                <Button icon={<UploadOutlined/>}
+                                                        style={{display: 'inline'}}>上传文件</Button>
+                                            </Upload>
+                                        </> :
+                                        <>
+                                            <span>{newItem.fileOriName}</span>
+                                            <div style={{marginTop: '10px'}}/>
+                                            <Button icon={<FilePdfOutlined/>}
+                                                    style={{display: 'inline', marginLeft: '45px'}}
+                                                    onClick={this.openFile}>预览文件</Button>
+                                            <Upload
+                                                beforeUpload={
+                                                    file => this.setFile(file)
+                                                }
+                                                showUploadList={false}
+                                                action={'http://up-z2.qiniup.com'}
+                                                data={data}
+                                                fileList={this.state.fileList}
+                                                onChange={this.changeUpload}>
+                                                <Button icon={<UploadOutlined/>}
+                                                        style={{display: 'inline', marginLeft: '30px'}}>替换</Button>
+                                            </Upload>
+                                        </>
+                                    }
+                                </div>
+                                <Button style={{float: "right", marginRight: '30px', marginTop: '20px'}} type="primary"
+                                        onClick={this.showConfirmAdd}>新增</Button>
+                            </div>
+                            :
+                            <div>
+                                <div className={index.div}>
+                                    <span className={index.star}>*</span>
+                                    <span>论文名：</span>
+                                    <Input style={{width: '300px'}} value={papers[operateI].title}
+                                           onChange={this.changeTitle(operateI)}/>
+                                </div>
+                                <div className={index.div}>
+                                    <span className={index.star}>*</span>
+                                    <span>期刊会议：</span>
+                                    <Input style={{width: '300px'}} value={papers[operateI].venue}
+                                           onChange={this.changeVenue(operateI)}/>
+                                </div>
+                                <div className={index.div}>
+                                    <span className={index.star}>*</span>
+                                    <span>文件：</span>
+                                    <span>{papers[operateI].fileOriName}</span>
+                                    <div style={{marginTop: '10px'}}/>
+                                    <Button icon={<FilePdfOutlined/>}
+                                            style={{display: 'inline', marginLeft: '45px'}}
+                                            onClick={this.openFile}>预览文件</Button>
+                                    <Upload
+                                        beforeUpload={
+                                            file => this.setFile(file)
+                                        }
+                                        showUploadList={false}
+                                        action={'http://up-z2.qiniup.com'}
+                                        data={data}
+                                        fileList={this.state.fileList}
+                                        onChange={this.changeUpload}>
+                                        <Button icon={<UploadOutlined/>}
+                                                style={{display: 'inline', marginLeft: '30px'}}>替换</Button>
+                                    </Upload>
+                                </div>
+                                <Button style={{float: "right", marginRight: '30px', marginTop: '20px'}} type="primary"
+                                        onClick={this.showConfirmModify}>修改</Button>
+                            </div>
+                        }
+                    </Drawer>}
+                </>
+            )
+        }
     }
 }
 
