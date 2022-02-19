@@ -14,7 +14,7 @@ export default class App extends Component {
                 <BrowserRouter>
                     <Switch>
                         {window.location.pathname.startsWith('/background') ?
-                            <BackgroundNavigation/> : (window.location.pathname === '/discussion' || window.location.pathname === '/recommend' || window.location.pathname === '/login' || window.location.pathname === '/register' || window.location.pathname === '/checkemail') ?
+                            <BackgroundNavigation/> : (window.location.pathname === '/discussion' || window.location.pathname === '/recommend' || window.location.pathname === '/login' || window.location.pathname === '/register' || window.location.pathname === '/checkemail' || window.location.pathname === '/forgetpassword' || window.location.pathname === '/forgetpasswordcheckemail' || window.location.pathname === '/setpassword') ?
                                 <InnerNavigation/> : <OuterNavigation/>}
                     </Switch>
                 </BrowserRouter>

@@ -6,6 +6,7 @@ import getAbout from "../../../api/About/getAbout";
 import setAbout from "../../../api/About/setAbout";
 import confirm from "antd/es/modal/confirm";
 import {ExclamationCircleOutlined} from "@ant-design/icons";
+import cookie from "react-cookies";
 
 let isUnmount = false
 
@@ -83,6 +84,9 @@ class About extends Component {
     }
 
     render() {
+        if (cookie.load('admin') === undefined) {
+            this.props.history.push('/background/login')
+        }
         if (this.state.loading === true) {
             return (
                 <div className={index.spin}>

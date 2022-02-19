@@ -24,6 +24,7 @@ import findNth from "../../../utils/findNth";
 import addNews from "../../../api/News/addNews";
 import checkNews from "../../../api/News/checkNews";
 import ImgCrop from "antd-img-crop";
+import cookie from "react-cookies";
 
 const {Link} = Typography;
 
@@ -708,6 +709,9 @@ class News extends Component {
     }
 
     render() {
+        if (cookie.load('admin') === undefined) {
+            this.props.history.push('/background/login')
+        }
         if (this.state.loading === true) {
             return (
                 <div className={index.spin}>

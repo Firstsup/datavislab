@@ -9,6 +9,7 @@ import getImageToken from "../../../../api/Qiniu/getImageToken";
 import setCarouselImage from "../../../../api/About/setCarouselImage";
 import {v4 as uuidv4} from 'uuid'
 import ImgCrop from "antd-img-crop";
+import cookie from "react-cookies";
 
 let isUnmount = false
 
@@ -158,6 +159,9 @@ class Carousel extends Component {
     }
 
     render() {
+        if (cookie.load('admin') === undefined) {
+            this.props.history.push('/background/login')
+        }
         if (this.state.loading === true) {
             return (
                 <div className={index.spin}>

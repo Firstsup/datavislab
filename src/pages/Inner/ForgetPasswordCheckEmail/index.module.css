@@ -1,0 +1,15 @@
+.spin {
+    margin: 300px 0;
+    text-align: center;
+}
+
+.logoImg {
+    display: table-cell;
+    margin: 150px auto 50px;
+    height: 64px;
+}
+
+.div {
+    margin: auto;
+    width: 400px;
+}

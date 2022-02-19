@@ -21,6 +21,7 @@ import checkTeacher from "../../../../api/Team/checkTeacher";
 import modifyTeacher from "../../../../api/Team/modifyTeacher";
 import addTeacher from "../../../../api/Team/addTeacher";
 import ImgCrop from "antd-img-crop";
+import cookie from "react-cookies";
 
 const {Link} = Typography;
 
@@ -649,6 +650,9 @@ class Teachers extends Component {
     }
 
     render() {
+        if (cookie.load('admin') === undefined) {
+            this.props.history.push('/background/login')
+        }
         if (this.state.loading === true) {
             return (
                 <div className={index.spin}>

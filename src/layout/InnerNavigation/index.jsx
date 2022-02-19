@@ -14,7 +14,7 @@ class InnerNavigation extends Component {
         this.props.history.go()
     }
     clickBackground = () => {
-        this.props.history.push('/background/index/carousel')
+        this.props.history.push('/background/login')
         this.props.history.go()
     }
 

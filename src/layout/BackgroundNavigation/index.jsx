@@ -23,7 +23,7 @@ class BackgroundNavigation extends Component {
         this.props.history.go()
     }
     clickBackground = () => {
-        this.props.history.push('/background')
+        this.props.history.push('/background/login')
     }
 
     render() {

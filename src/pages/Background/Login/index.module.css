@@ -1,0 +1,15 @@
+.form {
+    max-width: 300px;
+    margin: auto;
+}
+
+.logoImg {
+    display: table-cell;
+    margin: 150px auto 50px;
+    height: 64px;
+}
+
+.spin {
+    margin: 300px 0;
+    text-align: center;
+}

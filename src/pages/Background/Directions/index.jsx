@@ -21,6 +21,7 @@ import modifyDirection from "../../../api/Directions/modifyDirection";
 import addDirection from "../../../api/Directions/addDirection";
 import checkDirection from "../../../api/Directions/checkDirection";
 import ImgCrop from "antd-img-crop";
+import cookie from "react-cookies";
 
 const {Link} = Typography;
 
@@ -580,6 +581,9 @@ class Directions extends Component {
     }
 
     render() {
+        if (cookie.load('admin') === undefined) {
+            this.props.history.push('/background/login')
+        }
         if (this.state.loading === true) {
             return (
                 <div className={index.spin}>

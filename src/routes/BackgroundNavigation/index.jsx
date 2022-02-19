@@ -12,6 +12,7 @@ import Prize from "../../pages/Background/Achievements/Prize";
 import Patent from "../../pages/Background/Achievements/Patent";
 import Teachers from "../../pages/Background/Team/Teachers";
 import Students from "../../pages/Background/Team/Students";
+import Login from "../../pages/Background/Login";
 
 class BackgroundNavigationRoute extends Component {
     render() {
@@ -29,6 +30,7 @@ class BackgroundNavigationRoute extends Component {
                 <Route exact={true} path={'/background/About'} component={About}/>
                 <Route exact={true} path={'/background/discussion'} component={Discussion}/>
                 <Route exact={true} path={'/background/recommend'} component={Recommend}/>
+                <Route exact={true} path={'/background/login'} component={Login}/>
                 <Redirect to={'/background/index/carousel'}/>
             </Switch>
         )

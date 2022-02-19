@@ -27,7 +27,7 @@ class OuterNavigation extends Component {
     }
 
     clickBackground = () => {
-        this.props.history.push('/background/index/carousel')
+        this.props.history.push('/background/login')
         this.props.history.go()
     }
 
